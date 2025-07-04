@@ -1,16 +1,15 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
+import Footer from "./components/navigation/Footer";
+import NavBar from "./components/navigation/NavBar";
+import AllRoutes from "./components/utils/routing/AllRoutes";
 
-function App() {
-  const [count, setCount] = useState(0);
-
+export default function App() {
   return (
-    <>
-      <h1 className="text-3xl font-bold">Hello! 😊</h1>
-    </>
+    <div className="flex flex-col min-h-screen bg-slate-200">
+      <NavBar />
+      <AllRoutes />
+      <Footer />
+    </div>
   );
 }
 
-export default App;
