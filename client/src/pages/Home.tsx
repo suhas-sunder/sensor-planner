@@ -1,16 +1,29 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 const GRID_WIDTH = 5;
 const GRID_HEIGHT = 10;
-const CELL_SIZE = 100; // in pixels
+const CELL_SIZE = 100;
+const TOTAL_WIDTH = GRID_WIDTH * CELL_SIZE;
 
 export default function Home() {
-  const [viewTransform, setViewTransform] = useState({
-    x: 0,
-    y: 0,
-    scale: 1,
-  });
+  // Generate a 2D array of width ratios for each cell
+  const cellWidthRatios = useMemo(
+    () =>
+      Array.from({ length: GRID_HEIGHT }, () =>
+        Array.from({ length: GRID_WIDTH }, () => 0.8 + Math.random() * 0.6) // range 0.8–1.4
+      ),
+    []
+  );
 
+  // Normalize ratios per row so each sums to TOTAL_WIDTH
+  const visualCellWidths = useMemo(() => {
+    return cellWidthRatios.map((row) => {
+      const sum = row.reduce((a, b) => a + b, 0);
+      return row.map((r) => (r / sum) * TOTAL_WIDTH);
+    });
+  }, [cellWidthRatios]);
+
+  const [viewTransform, setViewTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [isZoomed, setIsZoomed] = useState(false);
   const [lastClickPosition, setLastClickPosition] = useState<{ x: number; y: number } | null>(null);
 
@@ -19,7 +32,7 @@ export default function Home() {
     const clickX = e.clientX - svgRect.left;
     const clickY = e.clientY - svgRect.top;
 
-    const cellCol = Math.floor(clickX / CELL_SIZE);
+    const cellCol = Math.floor(clickX / CELL_SIZE); // Logical column index
     const cellRow = Math.floor(clickY / CELL_SIZE);
 
     if (!isZoomed) {
@@ -40,8 +53,7 @@ export default function Home() {
       const offsetX = gridOffsetX - (GRID_WIDTH * CELL_SIZE) / 2 - targetX * scale;
 
       const gridOffsetY = (screenHeight - GRID_HEIGHT * CELL_SIZE) / 2;
-    const offsetY = gridOffsetY + (GRID_HEIGHT * CELL_SIZE) / 3.5 - targetY * scale;
-
+      const offsetY = gridOffsetY + (GRID_HEIGHT * CELL_SIZE) / 3.5 - targetY * scale;
 
       setViewTransform({ x: offsetX, y: offsetY, scale });
       setLastClickPosition({ x: cellCol, y: cellRow });
@@ -55,15 +67,12 @@ export default function Home() {
 
   return (
     <div className="w-full h-screen flex items-center justify-center bg-black relative overflow-hidden">
-      <div
-        className="relative"
-        style={{ width: GRID_WIDTH * CELL_SIZE, height: GRID_HEIGHT * CELL_SIZE }}
-      >
+      <div className="relative" style={{ width: TOTAL_WIDTH, height: GRID_HEIGHT * CELL_SIZE }}>
         <svg
-          width={GRID_WIDTH * CELL_SIZE}
+          width={TOTAL_WIDTH}
           height={GRID_HEIGHT * CELL_SIZE}
-          className="absolute top-0 left-0"
           onDoubleClick={handleGridDoubleClick}
+          className="absolute top-0 left-0"
           style={{
             transform: `translate(${viewTransform.x}px, ${viewTransform.y}px) scale(${viewTransform.scale})`,
             transformOrigin: "top left",
@@ -71,20 +80,25 @@ export default function Home() {
           }}
         >
           {/* Grid Cells */}
-          {[...Array(GRID_HEIGHT)].map((_, row) =>
-            [...Array(GRID_WIDTH)].map((_, col) => (
-              <rect
-                key={`cell-${col}-${row}`}
-                x={col * CELL_SIZE}
-                y={row * CELL_SIZE}
-                width={CELL_SIZE}
-                height={CELL_SIZE}
-                fill="white"
-                stroke="gray"
-                className="cursor-pointer"
-              />
-            ))
-          )}
+          {visualCellWidths.map((rowWidths, row) => {
+            let x = 0;
+            return rowWidths.map((width, col) => {
+              const rect = (
+                <rect
+                  key={`cell-${col}-${row}`}
+                  x={x}
+                  y={row * CELL_SIZE}
+                  width={width}
+                  height={CELL_SIZE}
+                  fill="white"
+                  stroke="gray"
+                  className="cursor-pointer"
+                />
+              );
+              x += width;
+              return rect;
+            });
+          })}
 
           {/* Overlapping Colored Shapes */}
           <circle cx={130} cy={100} r={40} fill="rgba(255,0,0,0.6)" />
