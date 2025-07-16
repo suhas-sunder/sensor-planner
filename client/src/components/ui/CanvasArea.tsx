@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import type { CanvasAreaProps, Device } from "../utils/Types";
+import type { CanvasAreaProps, Device } from "../utils/other/Types";
 
 // Function to draw a device on the canvas
-function drawDevice(
+function drawSensor(
   ctx: CanvasRenderingContext2D,
   device: Device,
   isSelected: boolean,
@@ -11,11 +11,18 @@ function drawDevice(
   const screenX = device.x - viewport.x; // Get the screen coordinates
   const screenY = device.y - viewport.y; // Get the screen coordinates
 
+  // Transparent coverage radius (draw this FIRST so it sits behind the circle)
+  ctx.beginPath();
+  ctx.fillStyle = "rgba(0, 123, 255, 0.15)"; // soft transparent blue
+  ctx.arc(screenX, screenY, device.sensor_rad || 30, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.closePath();
+
   ctx.beginPath(); // Start a new path
   ctx.fillStyle = isSelected ? "#ffa500" : "#333"; // Set the fill color
 
   if (device.type.includes("sensor")) {
-    ctx.arc(screenX, screenY, 10, 0, 2 * Math.PI);
+    ctx.arc(screenX, screenY, 5, 0, 2 * Math.PI);
   } else {
     ctx.rect(screenX - 10, screenY - 10, 20, 20);
   }
@@ -25,11 +32,14 @@ function drawDevice(
 
   ctx.font = "10px Arial";
   ctx.fillStyle = "#000";
-  ctx.fillText(device.type, screenX + 12, screenY + 4);
+  const text = device.name;
+  const textWidth = ctx.measureText(text).width;
+  ctx.fillText(text, screenX - textWidth / 2, screenY + 25);
 }
 
 const CanvasArea: React.FC<CanvasAreaProps> = ({
   devices,
+  setDevices,
   selectedDeviceId,
   onCanvasClick,
   viewport,
@@ -39,6 +49,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 }); // Track canvas size
   const [isPanning, setIsPanning] = useState(false); // Track panning state
   const [lastPan, setLastPan] = useState<{ x: number; y: number } | null>(null); // Track last mouse position
+  const [draggingSensorId, setDraggingSensorId] = useState<string | null>(null);
 
   // Update canvas size on window resize
   useEffect(() => {
@@ -50,14 +61,6 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       canvas.height = canvas.offsetHeight; // update canvas height
       setCanvasSize({ width: canvas.width, height: canvas.height }); // triggers redraw
     };
-
-    // const resize = () => {
-    //   const scale = window.devicePixelRatio || 1;
-    //   canvas.width = canvas.offsetWidth * scale;
-    //   canvas.height = canvas.offsetHeight * scale;
-    //   ctx?.scale(scale, scale);
-    //   setCanvasSize({ width: canvas.width, height: canvas.height });
-    // };
 
     resize(); // initial call
     const observer = new ResizeObserver(resize); // listen for window resize
@@ -83,22 +86,55 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    setIsPanning(true); // Start panning
-    setLastPan({ x: e.clientX, y: e.clientY }); // Store the last mouse position
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left + viewport.x;
+    const mouseY = e.clientY - rect.top + viewport.y;
+
+    const target = devices.find(
+      (d) => Math.hypot(d.x - mouseX, d.y - mouseY) <= (d.sensor_rad || 30)
+    );
+
+    if (target) {
+      setDraggingSensorId(target.id);
+    } else {
+      setIsPanning(true);
+      setLastPan({ x: e.clientX, y: e.clientY });
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isPanning || !lastPan) return; // If not panning, do nothing
-    const dx = e.clientX - lastPan.x; // Calculate the change in mouse position
-    const dy = e.clientY - lastPan.y; // Calculate the change in mouse position
-    setViewport((prev) => ({ x: prev.x - dx, y: prev.y - dy })); // Update the viewport
-    setLastPan({ x: e.clientX, y: e.clientY });
+    if (!canvasRef.current) return;
+
+    const dx = e.movementX;
+    const dy = e.movementY;
+
+    if (draggingSensorId) {
+      setDevices((prev) =>
+        prev.map((d) =>
+          d.id === draggingSensorId
+            ? { ...d, x: d.x + dx, y: d.y + dy, "prev-x": d.x, "prev-y": d.y }
+            : d
+        )
+      );
+    } else if (isPanning && lastPan) {
+      setViewport((prev) => ({
+        x: prev.x - dx,
+        y: prev.y - dy,
+      }));
+    }
   };
 
-  const handleMouseUp = () => {
-    setIsPanning(false); // Stop panning
-    setLastPan(null); // Reset the last mouse position
-  };
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      setIsPanning(false);
+      setDraggingSensorId(null);
+      setLastPan(null);
+    };
+
+    window.addEventListener("mouseup", handleGlobalMouseUp);
+    return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+  }, []);
 
   // Redraw on device list change
   useEffect(() => {
@@ -110,18 +146,17 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
 
     devices.forEach((device) => {
-      drawDevice(ctx, device, device.id === selectedDeviceId, viewport); // Draw each device
+      drawSensor(ctx, device, device.id === selectedDeviceId, viewport); // Draw each device
     });
   }, [devices, selectedDeviceId, viewport, canvasSize]); // Re-draw on device list change
 
   return (
-    <div className="flex relative flex-col items-center justify-center w-full h-screen bg-white overflow-hidden">
+    <div className="flex relative flex-col items-center justify-center w-full h-screen bg-white overflow-hidden cursor-pointer">
       <canvas
         ref={canvasRef}
-        onClick={handleClick}
+        onDoubleClick={handleClick} // Desktop
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
         className="block w-full h-full"
       />
     </div>

@@ -4,6 +4,7 @@ interface CanvasAreaProps {
   onCanvasClick?: (x: number, y: number) => void;
   viewport: { x: number; y: number };
   setViewport: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
+  onCanvasDoubleClick?: (x: number, y: number) => void;
 }
 
 type Device = {
@@ -11,6 +12,8 @@ type Device = {
   x: number;
   y: number;
   type: string;
+  name: string;
+  sensor_rad: number;
   state: Record<string, any>;
 };
 

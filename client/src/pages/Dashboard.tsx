@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Device } from "../components/utils/Types";
+import type { Device } from "../components/utils/other/Types";
 import CanvasArea from "../components/ui/CanvasArea";
 
 export default function Dashboard() {
@@ -9,6 +9,17 @@ export default function Dashboard() {
       x: 100,
       y: 100,
       type: "motion_sensor",
+      name: "Motion Sensor 1",
+      sensor_rad: 60,
+      state: { motion: false },
+    },
+    {
+      id: "test-1",
+      x: 100,
+      y: 100,
+      type: "motion_sensor",
+      name: "Motion Sensor 1",
+      sensor_rad: 60,
       state: { motion: false },
     },
   ]);
@@ -18,9 +29,14 @@ export default function Dashboard() {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
   const handleCanvasClick = (x: number, y: number): void => {
-    const clicked = devices.find((d) => Math.hypot(d.x - x, d.y - y) < 15);
+    const clicked = devices.find(
+      (d) => Math.hypot(d.x - x, d.y - y) <= (d.sensor_rad || 30)
+    );
+
     if (clicked) {
-      setSelectedDeviceId(clicked.id);
+      selectedDeviceId === clicked.id
+        ? setSelectedDeviceId(null)
+        : setSelectedDeviceId(clicked.id);
     } else {
       setSelectedDeviceId(null);
     }
@@ -52,6 +68,7 @@ export default function Dashboard() {
       </div>
       <CanvasArea
         devices={devices}
+        setDevices={_setDevices}
         selectedDeviceId={selectedDeviceId}
         onCanvasClick={handleCanvasClick}
         viewport={viewport}
