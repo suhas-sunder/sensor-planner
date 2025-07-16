@@ -49,7 +49,7 @@ export default function Home() {
   // 🔍 Zoom logic (untouched)
   const [viewTransform, setViewTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [isZoomed, setIsZoomed] = useState(false);
-  const [_lastClickPosition, setLastClickPosition] = useState<{ x: number; y: number } | null>(null);
+  const [lastClickPosition, setLastClickPosition] = useState<{ x: number; y: number } | null>(null);
 
   const handleGridDoubleClick = (e: React.MouseEvent<SVGSVGElement>) => {
     const svgRect = e.currentTarget.getBoundingClientRect();
