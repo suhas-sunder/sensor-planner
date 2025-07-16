@@ -6,30 +6,38 @@ function drawSensor(
   ctx: CanvasRenderingContext2D,
   device: Device,
   isSelected: boolean,
-  viewport: { x: number; y: number }
+  viewport: { x: number; y: number },
+  pulsePhase: number // ← NEW
 ): void {
-  const screenX = device.x - viewport.x; // Get the screen coordinates
-  const screenY = device.y - viewport.y; // Get the screen coordinates
+  const screenX = device.x - viewport.x;
+  const screenY = device.y - viewport.y;
 
-  // Transparent coverage radius (draw this FIRST so it sits behind the circle)
+  const maxRadius = device.sensor_rad || 30;
+  const animatedRadius = pulsePhase * maxRadius;
+
+  // 🔵 Pulsing ring effect
   ctx.beginPath();
-  ctx.fillStyle = "rgba(0, 123, 255, 0.15)"; // soft transparent blue
-  ctx.arc(screenX, screenY, device.sensor_rad || 30, 0, 2 * Math.PI);
+  ctx.strokeStyle = "rgba(0, 123, 255, 0.2)";
+  ctx.lineWidth = 2;
+  ctx.arc(screenX, screenY, animatedRadius, 0, 2 * Math.PI);
+  ctx.stroke();
+  ctx.closePath();
+
+  // 🔵 Static transparent sensor area
+  ctx.beginPath();
+  ctx.fillStyle = "rgba(0, 123, 255, 0.15)";
+  ctx.arc(screenX, screenY, maxRadius, 0, 2 * Math.PI);
   ctx.fill();
   ctx.closePath();
 
-  ctx.beginPath(); // Start a new path
-  ctx.fillStyle = isSelected ? "#ffa500" : "#333"; // Set the fill color
-
-  if (device.type.includes("sensor")) {
-    ctx.arc(screenX, screenY, 5, 0, 2 * Math.PI);
-  } else {
-    ctx.rect(screenX - 10, screenY - 10, 20, 20);
-  }
-
+  // ⚫ Main circle
+  ctx.beginPath();
+  ctx.fillStyle = isSelected ? "#ffa500" : "#333";
+  ctx.arc(screenX, screenY, 5, 0, 2 * Math.PI);
   ctx.fill();
   ctx.closePath();
 
+  // 🏷 Device label
   ctx.font = "10px Arial";
   ctx.fillStyle = "#000";
   const text = device.name;
@@ -50,6 +58,20 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   const [isPanning, setIsPanning] = useState(false); // Track panning state
   const [lastPan, setLastPan] = useState<{ x: number; y: number } | null>(null); // Track last mouse position
   const [draggingSensorId, setDraggingSensorId] = useState<string | null>(null);
+  const [pulsePhase, setPulsePhase] = useState(0);
+
+  useEffect(() => {
+    let frameId: number;
+
+    const animate = () => {
+      const randomSpeed = 0.015 + Math.random() * 0.01; // varies between 0.015 and 0.025
+      setPulsePhase((prev) => (prev + randomSpeed) % 1);
+      frameId = requestAnimationFrame(animate);
+    };
+
+    frameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frameId);
+  }, []);
 
   // Update canvas size on window resize
   useEffect(() => {
@@ -146,9 +168,15 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
 
     devices.forEach((device) => {
-      drawSensor(ctx, device, device.id === selectedDeviceId, viewport); // Draw each device
+      drawSensor(
+        ctx,
+        device,
+        device.id === selectedDeviceId,
+        viewport,
+        pulsePhase
+      );
     });
-  }, [devices, selectedDeviceId, viewport, canvasSize]); // Re-draw on device list change
+  }, [devices, selectedDeviceId, viewport, canvasSize, pulsePhase]); // Re-draw on device list change
 
   return (
     <div className="flex relative flex-col items-center justify-center w-full h-screen bg-white overflow-hidden cursor-pointer">

@@ -1,5 +1,6 @@
 interface CanvasAreaProps {
   devices: Device[];
+  setDevices: React.Dispatch<React.SetStateAction<Device[]>>;
   selectedDeviceId: string | null;
   onCanvasClick?: (x: number, y: number) => void;
   viewport: { x: number; y: number };
