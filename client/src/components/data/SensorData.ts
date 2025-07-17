@@ -4,7 +4,7 @@ export default function SensorData() {
   const sensors: Sensor[] = [
     {
       id: "motion-1",
-      x: 120,
+      x: 1120,
       y: 100,
       type: "motion_sensor",
       name: "Motion Sensor 1",
@@ -13,7 +13,7 @@ export default function SensorData() {
     },
     {
       id: "motion-2",
-      x: 200,
+      x: 1200,
       y: 180,
       type: "motion_sensor",
       name: "Motion Sensor 2",
@@ -22,7 +22,7 @@ export default function SensorData() {
     },
     {
       id: "temperature-1",
-      x: 300,
+      x: 1300,
       y: 120,
       type: "temperature_sensor",
       name: "Temperature Sensor",
@@ -31,7 +31,7 @@ export default function SensorData() {
     },
     {
       id: "humidity-1",
-      x: 400,
+      x: 1400,
       y: 150,
       type: "humidity_sensor",
       name: "Humidity Sensor",
@@ -40,7 +40,7 @@ export default function SensorData() {
     },
     {
       id: "gas-1",
-      x: 520,
+      x: 1520,
       y: 90,
       type: "gas_sensor",
       name: "Gas Leak Sensor",
@@ -49,7 +49,7 @@ export default function SensorData() {
     },
     {
       id: "smoke-1",
-      x: 600,
+      x: 1600,
       y: 200,
       type: "smoke_sensor",
       name: "Smoke Detector",
@@ -58,7 +58,7 @@ export default function SensorData() {
     },
     {
       id: "leak-1",
-      x: 220,
+      x: 1220,
       y: 350,
       type: "water_leak_sensor",
       name: "Leak Detector",
@@ -67,7 +67,7 @@ export default function SensorData() {
     },
     {
       id: "airq-1",
-      x: 320,
+      x: 1320,
       y: 420,
       type: "air_quality_sensor",
       name: "Air Quality Sensor",
@@ -76,7 +76,7 @@ export default function SensorData() {
     },
     {
       id: "light-1",
-      x: 480,
+      x: 1480,
       y: 360,
       type: "light_sensor",
       name: "Light Sensor",
@@ -85,7 +85,7 @@ export default function SensorData() {
     },
     {
       id: "wifi-1",
-      x: 600,
+      x: 1600,
       y: 300,
       type: "wifi_sensor",
       name: "WiFi Node",
@@ -94,7 +94,7 @@ export default function SensorData() {
     },
     {
       id: "bt-1",
-      x: 680,
+      x: 1680,
       y: 180,
       type: "bluetooth_beacon",
       name: "Bluetooth Beacon",
@@ -103,7 +103,7 @@ export default function SensorData() {
     },
     {
       id: "fridge-sensor",
-      x: 450,
+      x: 1450,
       y: 100,
       type: "fridge_monitor",
       name: "Fridge Module",
@@ -112,7 +112,7 @@ export default function SensorData() {
     },
     {
       id: "tv-sensor",
-      x: 550,
+      x: 1550,
       y: 150,
       type: "tv_module",
       name: "TV Monitor",
@@ -121,7 +121,7 @@ export default function SensorData() {
     },
     {
       id: "oven-gas",
-      x: 470,
+      x: 1470,
       y: 200,
       type: "gas_sensor",
       name: "Oven Gas Sensor",
