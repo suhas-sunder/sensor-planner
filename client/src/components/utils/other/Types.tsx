@@ -30,7 +30,7 @@ export type Room = {
   id: string;
   name: string;
   type: string;
-  room_number: number;
+  room_number: number | null;
   x: number;
   y: number;
   width: number;
