@@ -1,8 +1,6 @@
-import { NavLink } from "react-router-dom";
-
 export default function Footer() {
   return (
-    <footer className="fixed bottom-0 bg-slate-500 text-white w-full">
+    <footer className="flex items-center justify-center bottom-0 bg-slate-500 text-white w-full">
       <ul className="flex flex-col items-center justify-center gap-4">
         {/* <li>
           <NavLink
