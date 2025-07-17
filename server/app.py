@@ -1,26 +1,35 @@
 # app.py
 
 from flask import Flask, request, jsonify
-from models import db, Device
- 
+from models import db, Device 
 from datetime import datetime
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///smart.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
 db.init_app(app)
+
+def create_tables():
+    db.create_all()
+
+
+def create_tables():
+    db.create_all()
 
 @app.route("/layouts/<layout_id>/devices", methods=["GET", "POST"])
 def get_devices(layout_id):
     print(f"layout_id={layout_id}")
+
+    if request.method == "POST":
+        return add_or_update_device(layout_id)
+
     devices = Device.query.filter_by(floor_id=layout_id).all()
 
     result = []
     for device in devices:
         result.append({
             "id": device.id,
-            "type": device.type,
+            "device_type": device.device_type,
             "x": device.x,
             "y": device.y,
             "prev_x": device.prev_x,
@@ -43,9 +52,8 @@ def add_or_update_device(layout_id):
         # Look for existing device
         device = Device.query.get(data["id"])
 
-        if device:
-             
-            device.type = data["type"]
+        if device:             
+            device.device_type = data["type"]
             device.x = data["x"]
             device.y = data["y"]
             device.prev_x = data["prev_x"]
@@ -57,11 +65,10 @@ def add_or_update_device(layout_id):
             device.state = data["state"]
             device.date_modified = datetime.utcnow()
             message = "Device updated"
-        else:
-             
+        else:             
             device = Device(
                 id=data["id"],
-                type=data["type"],
+                device_type=data["type"],
                 x=data["x"],
                 y=data["y"],
                 prev_x=data["prev_x"],
@@ -83,10 +90,6 @@ def add_or_update_device(layout_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
- 
- 
-
-
 @app.route("/layouts/<layout_id>/devices/<device_id>", methods=["DELETE"])
 def delete_device(layout_id, device_id):
     try:
@@ -105,5 +108,7 @@ def delete_device(layout_id, device_id):
         return jsonify({"error": str(e)}), 500
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
+    with app.app_context():
+        create_tables()
     app.run(debug=True)

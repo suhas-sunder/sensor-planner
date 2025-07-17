@@ -19,7 +19,7 @@ class Device(db.Model):
     __tablename__ = "device"
 
     id = db.Column(db.String, primary_key=True)             # e.g. "device-123"
-    type = db.Column(db.String, nullable=False)             # "fan", "light_bulb", etc.
+    device_type = db.Column(db.String, nullable=False)             # "fan", "light_bulb", etc.
     x = db.Column(db.Integer, nullable=False)               # current x position
     y = db.Column(db.Integer, nullable=False)               # current y position
     prev_x = db.Column(db.Integer, nullable=True)           # previous x position
@@ -33,7 +33,7 @@ class Device(db.Model):
     state = db.Column(db.String, nullable=False)              # JSON status like {"on": true}
 
     def __repr__(self):
-        return f"<Device {self.id} {self.type} mounted to {self.mounted_to}>"
+        return f"<Device {self.id} {self.device_type} mounted to {self.mounted_to}>"
 
 class Sensor(db.Model):
     """Optional: room sensors (occupancy, temperature …)."""
