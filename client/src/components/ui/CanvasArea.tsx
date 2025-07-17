@@ -93,7 +93,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
     // Animation sensor pulse loop
     const animate = () => {
-      const speed = 0.005;
+      const speed = 0.001;
       setPulsePhase((prev) => (prev + speed) % 1);
       frameId = requestAnimationFrame(animate);
     };
@@ -156,7 +156,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
   return (
     <div className="flex relative flex-col items-center justify-center w-full h-screen bg-white overflow-hidden cursor-pointer">
-      <div className="absolute bottom-22 right-8 bg-white/95 px-3 py-2 rounded border border-gray-300 shadow text-black font-mono text-xs">
+      <div className="absolute bottom-6 right-6 bg-white/95 px-3 py-2 rounded border border-gray-300 shadow text-black font-mono text-xs">
         <div className="text-center font-bold tracking-wider">SCALE: 1:50</div>
 
         <div className="flex justify-between gap-[3.2em] -translate-x-[0.2em]">
