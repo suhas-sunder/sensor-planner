@@ -1,166 +1,10 @@
 import { useState } from "react";
 import type { Sensor } from "../components/utils/other/Types";
 import CanvasArea from "../components/ui/CanvasArea";
+import SensorData from "../components/data/SensorData.js";
 
 export default function Dashboard() {
-  const [sensors, setSensors] = useState<Sensor[]>([
-    {
-      id: "motion-1",
-      x: 120,
-      y: 100,
-      type: "motion_sensor",
-      name: "Motion Sensor 1",
-      sensor_rad: 60,
-      state: { motion: false },
-    },
-    {
-      id: "motion-2",
-      x: 200,
-      y: 180,
-      type: "motion_sensor",
-      name: "Motion Sensor 2",
-      sensor_rad: 60,
-      state: { motion: false },
-    },
-    {
-      id: "temperature-1",
-      x: 300,
-      y: 120,
-      type: "temperature_sensor",
-      name: "Temperature Sensor",
-      sensor_rad: 50,
-      state: { temperature: 22 },
-    },
-    {
-      id: "humidity-1",
-      x: 400,
-      y: 150,
-      type: "humidity_sensor",
-      name: "Humidity Sensor",
-      sensor_rad: 50,
-      state: { humidity: 55 },
-    },
-    {
-      id: "gas-1",
-      x: 520,
-      y: 90,
-      type: "gas_sensor",
-      name: "Gas Leak Sensor",
-      sensor_rad: 50,
-      state: { gas_leak: false },
-    },
-    {
-      id: "smoke-1",
-      x: 600,
-      y: 200,
-      type: "smoke_sensor",
-      name: "Smoke Detector",
-      sensor_rad: 50,
-      state: { smoke: false },
-    },
-    {
-      id: "leak-1",
-      x: 220,
-      y: 350,
-      type: "water_leak_sensor",
-      name: "Leak Detector",
-      sensor_rad: 40,
-      state: { leak: false },
-    },
-    {
-      id: "airq-1",
-      x: 320,
-      y: 420,
-      type: "air_quality_sensor",
-      name: "Air Quality Sensor",
-      sensor_rad: 60,
-      state: { aqi: 42 },
-    },
-    {
-      id: "light-1",
-      x: 480,
-      y: 360,
-      type: "light_sensor",
-      name: "Light Sensor",
-      sensor_rad: 40,
-      state: { light_level: "medium" },
-    },
-    {
-      id: "wifi-1",
-      x: 600,
-      y: 300,
-      type: "wifi_sensor",
-      name: "WiFi Node",
-      sensor_rad: 150,
-      state: { signal_strength: "strong" },
-    },
-    {
-      id: "bt-1",
-      x: 680,
-      y: 180,
-      type: "bluetooth_beacon",
-      name: "Bluetooth Beacon",
-      sensor_rad: 80,
-      state: {},
-    },
-    {
-      id: "fridge-sensor",
-      x: 450,
-      y: 100,
-      type: "fridge_monitor",
-      name: "Fridge Module",
-      sensor_rad: 30,
-      state: { temp: 3, doorOpen: false, humidity: 70 },
-    },
-    {
-      id: "tv-sensor",
-      x: 550,
-      y: 150,
-      type: "tv_module",
-      name: "TV Monitor",
-      sensor_rad: 40,
-      state: { power: true, ambientLight: "low" },
-    },
-    {
-      id: "oven-gas",
-      x: 470,
-      y: 200,
-      type: "gas_sensor",
-      name: "Oven Gas Sensor",
-      sensor_rad: 40,
-      state: { gasLeak: false },
-    },
-    // {
-    //   id: "hub-1",
-    //   x: 300,
-    //   y: 300,
-    //   type: "zigbee_hub",
-    //   name: "Zigbee Hub",
-    //   sensor_rad: 150, // coverage radius
-    //   state: { connectedDevices: 8 },
-    // },
-
-    // {
-    //   id: "hub-2",
-    //   x: 500,
-    //   y: 250,
-    //   type: "wifi_router",
-    //   name: "Main WiFi",
-    //   sensor_rad: 200,
-    //   state: { bandwidth: "100Mbps", devices: 12 },
-    // },
-
-    // {
-    //   id: "hub-3",
-    //   x: 600,
-    //   y: 400,
-    //   type: "ble_gateway",
-    //   name: "BLE Gateway",
-    //   sensor_rad: 100,
-    //   state: { beaconsTracked: 5 },
-    // },
-  ]);
-
+  const [sensors, setSensors] = useState<Sensor[]>(SensorData());
   const [viewport, setViewport] = useState({ x: 0, y: 0 });
 
   const [selectedSensorId, setSelectedSensorId] = useState<string | null>(null);
@@ -193,6 +37,14 @@ export default function Dashboard() {
           <div>Setting 2</div>
           <div>Setting 3</div>
           <div>Setting 4</div>
+        </div>
+        <div>
+          <button className="border-2 border-white rounded-md p-2">
+            Hide Sensors
+          </button>
+          <button className="border-2 border-white rounded-md p-2">
+            Hide Applicances
+          </button>
         </div>
         <div className="flex flex-col gap-8 mt-auto -translate-y-25">
           <button className="border-2 border-white rounded-md p-2">
