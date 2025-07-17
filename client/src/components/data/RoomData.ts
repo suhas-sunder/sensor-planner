@@ -7,8 +7,8 @@ export default function RoomData(): Room[] {
       name: "Bedroom 1",
       type: "bedroom",
       room_number: 401,
-      x: 0,
-      y: 0,
+      x: 50,
+      y: 50,
       width: 400,
       height: 153,
       windows: [

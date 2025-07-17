@@ -1,131 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import type { CanvasAreaProps, Sensor, Room } from "../utils/other/Types";
-import RoomData from "../data/RoomData";
-
-// Function to draw a Sensor on the canvas
-function drawSensor(
-  ctx: CanvasRenderingContext2D,
-  Sensor: Sensor,
-  isSelected: boolean,
-  viewport: { x: number; y: number },
-  pulsePhase: number // ← NEW
-): void {
-  const screenX = Sensor.x - viewport.x;
-  const screenY = Sensor.y - viewport.y;
-
-  const maxRadius = Sensor.sensor_rad || 30;
-  const animatedRadius = pulsePhase * maxRadius;
-
-  // Pulsing ring effect
-  ctx.beginPath();
-  ctx.strokeStyle = "rgba(0, 123, 255, 0.2)";
-  ctx.lineWidth = 2;
-  ctx.arc(screenX, screenY, animatedRadius, 0, 2 * Math.PI);
-  ctx.stroke();
-  ctx.closePath();
-
-  const secondaryRadius = ((pulsePhase + 0.5) % 1) * maxRadius;
-  ctx.beginPath();
-  ctx.strokeStyle = "rgba(0, 123, 255, 0.2)";
-  ctx.lineWidth = 1;
-  ctx.arc(screenX, screenY, secondaryRadius, 0, 2 * Math.PI);
-  ctx.stroke();
-  ctx.closePath();
-
-  // Static transparent sensor area
-  ctx.beginPath();
-  ctx.fillStyle = "rgba(0, 123, 255, 0.15)";
-  ctx.arc(screenX, screenY, maxRadius, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.closePath();
-
-  // Main circle
-  ctx.beginPath();
-  ctx.fillStyle = isSelected ? "#ff0000ff" : "#333";
-  ctx.arc(screenX, screenY, 5, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.closePath();
-
-  // 🏷 Sensor label
-  ctx.font = "10px Arial";
-  ctx.fillStyle = "#000";
-  const text = Sensor.name;
-  const textWidth = ctx.measureText(text).width;
-  ctx.fillText(text, screenX - textWidth / 2, screenY + 25);
-}
-function drawRoomWithWalls(
-  ctx: CanvasRenderingContext2D,
-  room: Room,
-  viewport: { x: number; y: number },
-  wallThickness = 3
-) {
-  const screenX = room.x - viewport.x;
-  const screenY = room.y - viewport.y;
-
-  ctx.save();
-
-  const walls = {
-    top: { x: screenX, y: screenY, w: room.width, h: wallThickness },
-    bottom: {
-      x: screenX,
-      y: screenY + room.height - wallThickness,
-      w: room.width,
-      h: wallThickness,
-    },
-    left: { x: screenX, y: screenY, w: wallThickness, h: room.height },
-    right: {
-      x: screenX + room.width - wallThickness,
-      y: screenY,
-      w: wallThickness,
-      h: room.height,
-    },
-  };
-
-  // Draw all walls
-  ctx.fillStyle = "#000";
-  for (const wall of Object.values(walls)) {
-    ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
-  }
-
-  // Draw doors (as white sections)
-  room.doors?.forEach(({ side, offset, length = 30 }) => {
-    const wall = walls[side];
-    ctx.fillStyle = "#fff";
-    if (side === "top" || side === "bottom") {
-      ctx.fillRect(wall.x + offset, wall.y, length, wall.h);
-    } else {
-      ctx.fillRect(wall.x, wall.y + offset, wall.w, length);
-    }
-
-    // Optional: draw small brown rectangle to indicate door
-    ctx.fillStyle = "#654321";
-    if (side === "top" || side === "bottom") {
-      ctx.fillRect(wall.x + offset, wall.y, 8, wall.h);
-    } else {
-      ctx.fillRect(wall.x, wall.y + offset, wall.w, 8);
-    }
-  });
-
-  // Draw windows (as light blue segments)
-  room.windows?.forEach(({ side, offset, length = 30 }) => {
-    const wall = walls[side];
-    ctx.fillStyle = "#66ccff";
-    if (side === "top" || side === "bottom") {
-      ctx.fillRect(wall.x + offset, wall.y, length, 4);
-    } else {
-      ctx.fillRect(wall.x, wall.y + offset, 4, length);
-    }
-  });
-
-  // Room label
-  ctx.font = "14px sans-serif";
-  ctx.fillStyle = "#000";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(room.name, screenX + room.width / 2, screenY + room.height / 2);
-
-  ctx.restore();
-}
+import type { CanvasAreaProps } from "../utils/other/Types";
+import RoomData from "../data/RoomData.js";
+import DrawSensor from "../utils/drawings/DrawSesnsor";
+import DrawRoomWithWalls from "../utils/drawings/DrawRoomWithWalls";
+import DrawOriginMarker from "../utils/drawings/DrawOriginMarker";
 
 const CanvasArea: React.FC<CanvasAreaProps> = ({
   sensors,
@@ -251,13 +129,16 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     if (!ctx) return; // Exit if context failed to load (safety check)
 
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the entire canvas before redrawing
+
+    DrawOriginMarker(ctx, viewport);
+
     RoomData().forEach((room) => {
-      drawRoomWithWalls(ctx, room, viewport);
+      DrawRoomWithWalls(ctx, room, viewport);
     });
 
     // Loop over each Sensor and draw it
     sensors.forEach((Sensor) => {
-      drawSensor(
+      DrawSensor(
         ctx, // Canvas drawing context
         Sensor, // The current Sensor to draw
         Sensor.id === selectedSensorId, // Highlight if this Sensor is selected
@@ -275,6 +156,37 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
   return (
     <div className="flex relative flex-col items-center justify-center w-full h-screen bg-white overflow-hidden cursor-pointer">
+      <div className="absolute bottom-22 right-8 bg-white/95 px-3 py-2 rounded border border-gray-300 shadow text-black font-mono text-xs">
+        <div className="text-center font-bold tracking-wider">SCALE: 1:50</div>
+
+        <div className="flex justify-between gap-[3.2em] -translate-x-[0.2em]">
+          <span>0</span>
+          <span>3</span>
+          <span>6</span>
+          <span>9</span>
+          <span>12</span>
+          <span>15</span>
+        </div>
+        <div className="relative h-5 mt-1 mb-1 w-60">
+          {/* Horizontal bar */}
+          <div className="absolute top-2 left-0 right-0 h-0.5 bg-black" />
+
+          {/* Ticks */}
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute top-0 w-0.5 bg-black"
+              style={{
+                left: `${i * 20}%`,
+                height: i === 0 || i === 5 ? "100%" : "60%",
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="text-center font-bold tracking-wider">meters</div>
+      </div>
+
       <canvas
         ref={canvasRef}
         onDoubleClick={handleClick} // Desktop
