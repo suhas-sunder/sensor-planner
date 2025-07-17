@@ -15,16 +15,25 @@ db = SQLAlchemy()
 
 
 class Device(db.Model):
-    """Virtual smart devices (lights, doors, thermostats …)."""
+    """Virtual smart devices (lights, fans, AC, etc.)."""
     __tablename__ = "device"
 
-    id = db.Column(db.String, primary_key=True)      # e.g. "light_living"
-    type = db.Column(db.String, nullable=False)      # "light" | "door" | ...
-    state = db.Column(db.JSON, nullable=False)       # {"on":false} / {"locked":true}
+    id = db.Column(db.String, primary_key=True)             # e.g. "device-123"
+    type = db.Column(db.String, nullable=False)             # "fan", "light_bulb", etc.
+    x = db.Column(db.Integer, nullable=False)               # current x position
+    y = db.Column(db.Integer, nullable=False)               # current y position
+    prev_x = db.Column(db.Integer, nullable=True)           # previous x position
+    prev_y = db.Column(db.Integer, nullable=True)           # previous y position
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    date_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    coverage_rad = db.Column(db.Integer, nullable=True)     # radius of effect
+    active = db.Column(db.Boolean, default=False)           # whether it's on/working
+    mounted_to = db.Column(db.String, nullable=False)       # room name or id
+    floor_id = db.Column(db.String, nullable=False)         # layout/floor id
+    state = db.Column(db.String, nullable=False)              # JSON status like {"on": true}
 
-    def __repr__(self) -> str:
-        return f"<Device {self.id} {self.state}>"
-
+    def __repr__(self):
+        return f"<Device {self.id} {self.type} mounted to {self.mounted_to}>"
 
 class Sensor(db.Model):
     """Optional: room sensors (occupancy, temperature …)."""
