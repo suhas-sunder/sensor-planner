@@ -1,9 +1,24 @@
 import type { Room } from "../utils/other/Types";
+import { v4 as uuidv4 } from "uuid";
 
 export default function RoomData(): Room[] {
   const rooms: Room[] = [
     {
-      id: "bed1",
+      id: uuidv4(),
+      name: "Hallway",
+      type: "hallway",
+      room_number: null,
+      x: 891,
+      y: 0,
+      width: 130,
+      height: 1000,
+      windows: [
+        { side: "top", offset: 27, length: 75 },
+        { side: "bottom", offset: 27, length: 75 },
+      ],
+    },
+    {
+      id: uuidv4(),
       name: "Bedroom 1",
       type: "bedroom",
       room_number: 401,
@@ -15,9 +30,10 @@ export default function RoomData(): Room[] {
         { side: "top", offset: 80, length: 50 },
         { side: "top", offset: 230, length: 50 },
       ],
+      doors: [{ side: "bottom", offset: 113, length: 95 }],
     },
     {
-      id: "kitchen",
+      id: uuidv4(),
       name: "Kitchen",
       type: "kitchen",
       room_number: 401,
@@ -26,24 +42,29 @@ export default function RoomData(): Room[] {
       width: 320,
       height: 153,
       doors: [
-        { side: "bottom", offset: 120, length: 50 },
-        { side: "left", offset: 90, length: 50 },
+        { side: "bottom", offset: 113, length: 95 },
+        { side: "left", offset: 20, length: 50 },
       ],
       windows: [{ side: "top", offset: 100, length: 50 }],
     },
     {
-      id: "dining",
+      id: uuidv4(),
       name: "Dining",
       type: "dining",
       room_number: 401,
-      x: 800,
+      x: 674,
       y: 0,
       width: 220,
-      height: 150,
-      doors: [{ side: "bottom", offset: 90, length: 50 }],
+      height: 153,
+      doors: [
+        { side: "bottom", offset: 73, length: 75 },
+        { side: "left", offset: 90, length: 50 },
+        { side: "right", offset: 55, length: 50 },
+      ],
+      windows: [{ side: "top", offset: 100, length: 50 }],
     },
     {
-      id: "living",
+      id: uuidv4(),
       name: "Living Room",
       type: "main",
       room_number: 401,
@@ -58,7 +79,7 @@ export default function RoomData(): Room[] {
       windows: [{ side: "left", offset: 150, length: 50 }],
     },
     {
-      id: "bath1",
+      id: uuidv4(),
       name: "Bathroom 1",
       type: "bathroom",
       room_number: 401,
@@ -69,7 +90,7 @@ export default function RoomData(): Room[] {
       doors: [{ side: "top", offset: 35 }],
     },
     {
-      id: "closet1",
+      id: uuidv4(),
       name: "Closet",
       type: "closet",
       room_number: 401,
@@ -79,7 +100,7 @@ export default function RoomData(): Room[] {
       height: 100,
     },
     {
-      id: "bed2",
+      id: uuidv4(),
       name: "Bedroom 2",
       type: "bedroom",
       room_number: 401,
@@ -90,7 +111,7 @@ export default function RoomData(): Room[] {
       doors: [{ side: "left", offset: 60 }],
     },
     {
-      id: "bath2",
+      id: uuidv4(),
       name: "Bathroom 2",
       type: "bathroom",
       room_number: 401,
@@ -101,7 +122,7 @@ export default function RoomData(): Room[] {
       doors: [{ side: "top", offset: 35 }],
     },
     {
-      id: "closet2",
+      id: uuidv4(),
       name: "Closet",
       type: "closet",
       room_number: 401,
@@ -111,7 +132,7 @@ export default function RoomData(): Room[] {
       height: 80,
     },
     {
-      id: "balcony",
+      id: uuidv4(),
       name: "Balcony",
       type: "balcony",
       room_number: 401,
