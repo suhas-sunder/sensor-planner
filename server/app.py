@@ -63,7 +63,7 @@ def add_or_update_device(layout_id):
             device.mounted_to = data["mounted_to"]
             device.floor_id = layout_id   
             device.state = data["state"]
-            device.date_modified = datetime.utcnow()
+            device.date_modified = datetime()
             message = "Device updated"
         else:             
             device = Device(
@@ -78,8 +78,8 @@ def add_or_update_device(layout_id):
                 mounted_to=data["mounted_to"],
                 floor_id=layout_id,
                 state=data["state"],
-                date_created=datetime.utcnow(),
-                date_modified=datetime.utcnow()
+                date_created=datetime(),
+                date_modified=datetime()
             )
             db.session.add(device)
             message = "Device added"
@@ -190,7 +190,12 @@ def add_or_update_sensor(layout_id):
 
     except Exception as e:
         print(f"Exception occurred: {e}")
+<<<<<<< HEAD
+        return jsonify({"error": str(e)}), 500
+
+=======
         return jsonify({"error": str(e)}), 
+>>>>>>> origin/main
 
 
 @app.route("/layouts/<layout_id>/sensors/<sensor_id>", methods=["DELETE"])
