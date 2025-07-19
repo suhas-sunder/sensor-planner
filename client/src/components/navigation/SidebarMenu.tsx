@@ -1,11 +1,67 @@
+import { useEffect, useState } from "react";
+import type { Device, SearchItem, Sensor } from "../utils/other/Types";
+
 export default function SidebarMenu() {
+  const [sensors, _setSensors] = useState<Sensor[]>([]);
+  const [devices, _setDevices] = useState<Device[]>([]);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchItem[]>([]);
+
+  const allItems: SearchItem[] = [
+    ...sensors.map((s) => ({ id: s.id, name: s.name, type: s.type })),
+    ...devices.map((d) => ({ id: d.id, name: d.name, type: d.type })),
+  ];
+
+  useEffect(() => {
+    const lowerQuery = query.toLowerCase().trim();
+
+    if (!lowerQuery) {
+      setResults([]);
+      return;
+    }
+
+    setResults(
+      allItems.filter(
+        (item) =>
+          item.name.toLowerCase().includes(lowerQuery) ||
+          item.type.toLowerCase().includes(lowerQuery)
+      )
+    );
+  }, [query, sensors, devices]);
+
   return (
     <div className="flex flex-col min-w-60 items-center bg-slate-800 gap-5 text-white">
-      <h1 className="flex font-bold text-2xl mt-4 ">4th Floor </h1>
+      <h1 className="flex font-bold text-2xl mt-4 "> 4th Floor </h1>
+      <div className="relative w-full max-w-md mx-auto mb-4">
+        <input
+          type="text"
+          className="w-full p-2 border border-gray-300 rounded-md shadow-sm"
+          placeholder="Search sensors, devices..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+
+        {results.length > 0 && (
+          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow">
+            {results.map((item) => (
+              <div
+                key={item.id}
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => {
+                  console.log("Clicked:", item.id);
+                }}
+              >
+                <div className="font-medium">{item.name}</div>
+                <div className="text-xs text-gray-500">{item.type}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       <div className="flex flex-col bg-slate-700 gap-3 rounded-md p-4 px-5">
-        <div>Motion Sensor 1</div>
-        <div className="flex justify-center items-center min-w-45 min-h-45 bg-slate-600 rounded-md">
-          SENSOR PREVIEW IMG
+        <div>Motion Sensor 1 </div>
+        <div className="flex justify-center items-center min-w-40 min-h-40 bg-slate-600 rounded-md">
+          PREVIEW IMG
         </div>
         <div>Status: Active </div>
         <div>Setting 1</div>
