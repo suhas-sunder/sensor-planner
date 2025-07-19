@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Sensor } from "../components/utils/other/Types";
 import CanvasArea from "../components/ui/CanvasArea";
 import SensorData from "../components/data/SensorData.js";
@@ -16,13 +16,21 @@ export default function Dashboard() {
     );
 
     if (clicked) {
-      selectedSensorId === clicked.id
-        ? setSelectedSensorId(null)
-        : setSelectedSensorId(clicked.id);
+      if (selectedSensorId === clicked.id) {
+        setSelectedSensorId(null);
+      } else {
+        setSelectedSensorId(clicked.id);
+      }
     } else {
       setSelectedSensorId(null);
     }
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      window.scrollTo({ top: 40, behavior: "smooth" });
+    }, 0);
+  }, []);
 
   return (
     <div className="flex w-full h-screen bg-black">

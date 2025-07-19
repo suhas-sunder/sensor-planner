@@ -18,6 +18,16 @@ export type Sensor = {
   state: Record<string, any>;
 };
 
+export type Device = {
+  id: string;
+  x: number;
+  y: number;
+  type: string;
+  name: string;
+  sensor_rad: number;
+  state: Record<string, any>;
+};
+
 type WallSide = "top" | "bottom" | "left" | "right";
 
 type WallFeature = {
@@ -40,3 +50,9 @@ export type Room = {
 };
 
 export type Rooms = Room[];
+
+export type SearchItem = {
+  id: string;
+  name: string;
+  type: string; // e.g., 'motion_sensor', 'wifi_sensor', 'fan', 'fridge'
+};

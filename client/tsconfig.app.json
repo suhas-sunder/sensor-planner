@@ -23,5 +23,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
+  "files.associations": {
+    "*.tsx": "typescriptreact"
+  },
   "include": ["src"]
 }

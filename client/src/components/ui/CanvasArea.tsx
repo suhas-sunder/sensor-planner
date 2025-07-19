@@ -4,6 +4,7 @@ import RoomData from "../data/RoomData.js";
 import DrawSensor from "../utils/drawings/DrawSesnsor";
 import DrawRoomWithWalls from "../utils/drawings/DrawRoomWithWalls";
 import DrawOriginMarker from "../utils/drawings/DrawOriginMarker";
+import Scale from "../overlays/Scale.js";
 
 const CanvasArea: React.FC<CanvasAreaProps> = ({
   sensors,
@@ -19,6 +20,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   const [lastPan, setLastPan] = useState<{ x: number; y: number } | null>(null); // Track last mouse position
   const [draggingSensorId, setDraggingSensorId] = useState<string | null>(null);
   const [pulsePhase, setPulsePhase] = useState(0);
+  const defaultSensorRadius = 30;
 
   // Handle canvas click
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -37,30 +39,37 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     }
   };
 
+  // Handle mouse down
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!canvasRef.current) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left + viewport.x;
-    const mouseY = e.clientY - rect.top + viewport.y;
+    const rect = canvasRef.current.getBoundingClientRect(); // Get the canvas rectangle
+    const mouseX = e.clientX - rect.left + viewport.x; // Get the mouse coordinates
+    const mouseY = e.clientY - rect.top + viewport.y; // Get the mouse coordinates
 
+    // Check if the mouse is over a sensor
     const target = sensors.find(
-      (d) => Math.hypot(d.x - mouseX, d.y - mouseY) <= (d.sensor_rad || 30)
+      (d) =>
+        Math.hypot(d.x - mouseX, d.y - mouseY) <=
+        (d.sensor_rad || defaultSensorRadius)
     );
 
+    // If the mouse is over a sensor, start dragging
     if (target) {
-      setDraggingSensorId(target.id);
+      setDraggingSensorId(target.id); // Set the dragging sensor
     } else {
-      setIsPanning(true);
-      setLastPan({ x: e.clientX, y: e.clientY });
+      setIsPanning(true); // Start panning
+      setLastPan({ x: e.clientX, y: e.clientY }); // Set the last mouse position
     }
   };
 
+  // Handle mouse move
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current) return; // Check if the canvas exists
 
-    const dx = e.movementX;
-    const dy = e.movementY;
+    const dx = e.movementX; // Get the mouse movement
+    const dy = e.movementY; // Get the mouse movement
 
+    // If a sensor is being dragged, update its position
     if (draggingSensorId) {
       setSensors((prev) =>
         prev.map((d) =>
@@ -70,6 +79,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
         )
       );
     } else if (isPanning && lastPan) {
+      // If panning, update the viewport
       setViewport((prev) => ({
         x: prev.x - dx,
         y: prev.y - dy,
@@ -77,38 +87,46 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     }
   };
 
+  // Handle mouse up
   useEffect(() => {
     const handleGlobalMouseUp = () => {
-      setIsPanning(false);
-      setDraggingSensorId(null);
-      setLastPan(null);
+      setIsPanning(false); // Stop panning
+      setDraggingSensorId(null); // Stop dragging
+      setLastPan(null); // Reset last mouse position
     };
 
-    window.addEventListener("mouseup", handleGlobalMouseUp);
-    return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+    window.addEventListener("mouseup", handleGlobalMouseUp); // Add event listener
+    return () => window.removeEventListener("mouseup", handleGlobalMouseUp); // Remove event listener
   }, []);
 
   useEffect(() => {
-    let frameId: number;
+    let frameId: number; // Animation frame ID
+    let lastTime = performance.now(); // Initialize lastTime
 
-    // Animation sensor pulse loop
-    const animate = () => {
-      const speed = 0.005;
-      setPulsePhase((prev) => (prev + speed) % 1);
-      frameId = requestAnimationFrame(animate);
+    // Animation loop for pulsating sensors
+    const animate = (currentTime: number) => {
+      const delta = currentTime - lastTime; // Time since last frame
+      lastTime = currentTime; // Update lastTime
+
+      const speed = 0.0001; // Phase speed per ms
+      const maxPulsePhase = 1; // Maximum phase value
+      // pulsePhase is being treated as a normalized phase in the range [0, 1), representing progress through one full animation cycle (like 0% to 100%). Keeps the value looping between 0 and 1
+      setPulsePhase((prev) => (prev + delta * speed) % maxPulsePhase); // Update phase based on time elapsed since last frame and speed constant
+
+      frameId = requestAnimationFrame(animate); // Schedule next frame
     };
 
-    frameId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frameId);
+    frameId = requestAnimationFrame(animate); // Start animation
+    return () => cancelAnimationFrame(frameId); // Cancel animation on component unmount
   }, []);
 
   // Update canvas size on window resize
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const canvas = canvasRef.current; // Get the canvas
+    if (!canvas) return; // Exit early if not mounted yet
 
     const resize = () => {
-      canvas.width = canvas.offsetWidth;
+      canvas.width = canvas.offsetWidth; // update canvas width
       canvas.height = canvas.offsetHeight; // update canvas height
       setCanvasSize({ width: canvas.width, height: canvas.height }); // triggers redraw
     };
@@ -130,10 +148,10 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the entire canvas before redrawing
 
-    DrawOriginMarker(ctx, viewport);
+    DrawOriginMarker(ctx, viewport); // Draw the origin marker
 
     RoomData().forEach((room) => {
-      DrawRoomWithWalls(ctx, room, viewport);
+      DrawRoomWithWalls(ctx, room, viewport); // Draw all rooms
     });
 
     // Loop over each Sensor and draw it
@@ -156,40 +174,10 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
   return (
     <div className="flex relative flex-col items-center justify-center w-full h-screen bg-white overflow-hidden cursor-pointer">
-      <div className="absolute bottom-22 right-8 bg-white/95 px-3 py-2 rounded border border-gray-300 shadow text-black font-mono text-xs">
-        <div className="text-center font-bold tracking-wider">SCALE: 1:50</div>
-
-        <div className="flex justify-between gap-[3.2em] -translate-x-[0.2em]">
-          <span>0</span>
-          <span>3</span>
-          <span>6</span>
-          <span>9</span>
-          <span>12</span>
-          <span>15</span>
-        </div>
-        <div className="relative h-5 mt-1 mb-1 w-60">
-          {/* Horizontal bar */}
-          <div className="absolute top-2 left-0 right-0 h-0.5 bg-black" />
-
-          {/* Ticks */}
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute top-0 w-0.5 bg-black"
-              style={{
-                left: `${i * 20}%`,
-                height: i === 0 || i === 5 ? "100%" : "60%",
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="text-center font-bold tracking-wider">meters</div>
-      </div>
-
+      <Scale />
       <canvas
         ref={canvasRef}
-        onDoubleClick={handleClick} // Desktop
+        onDoubleClick={handleClick} // Select sensor on double click
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         className="block w-full h-full"
