@@ -190,8 +190,12 @@ def add_or_update_sensor(layout_id):
 
     except Exception as e:
         print(f"Exception occurred: {e}")
+<<<<<<< HEAD
         return jsonify({"error": str(e)}), 500
 
+=======
+        return jsonify({"error": str(e)}), 
+>>>>>>> origin/main
 
 
 @app.route("/layouts/<layout_id>/sensors/<sensor_id>", methods=["DELETE"])
