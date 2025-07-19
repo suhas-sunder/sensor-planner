@@ -6,25 +6,40 @@ export default function DrawSensor(
   Sensor: Sensor,
   isSelected: boolean,
   viewport: { x: number; y: number },
-  pulsePhase: number // ← NEW
+  pulsePhase: number
 ): void {
   const screenX = Sensor.x - viewport.x;
   const screenY = Sensor.y - viewport.y;
+  const minRadius = 0.1;
+  const screenFillYOffset = 25;
+  const sensorCenterDotRad = 5;
+  const phaseOffset = 0.5;
+  const phaseWrap = 1;
 
-  const maxRadius = Sensor.sensor_rad || 30;
-  const animatedRadius = pulsePhase * maxRadius;
+  const pulseColor = "rgba(0, 123, 255, 0.2)";
+  const fillColor = "rgba(0, 123, 255, 0.15)";
+  const selectedColor = "#ff0000ff";
+  const deselectColor = "#333";
+  const fontSettings = "10px Arial";
+  const fontColor = "#000";
+
+  const maxRadius = Math.max(minRadius, Sensor.sensor_rad || 30);
+  const animatedRadius = Math.max(minRadius, pulsePhase * maxRadius);
+  const secondaryRadius = Math.max(
+    minRadius,
+    ((pulsePhase + phaseOffset) % phaseWrap) * maxRadius
+  );
 
   // Pulsing ring effect
   ctx.beginPath();
-  ctx.strokeStyle = "rgba(0, 123, 255, 0.2)";
+  ctx.strokeStyle = pulseColor;
   ctx.lineWidth = 2;
   ctx.arc(screenX, screenY, animatedRadius, 0, 2 * Math.PI);
   ctx.stroke();
   ctx.closePath();
 
-  const secondaryRadius = ((pulsePhase + 0.5) % 1) * maxRadius;
   ctx.beginPath();
-  ctx.strokeStyle = "rgba(0, 123, 255, 0.2)";
+  ctx.strokeStyle = pulseColor;
   ctx.lineWidth = 1;
   ctx.arc(screenX, screenY, secondaryRadius, 0, 2 * Math.PI);
   ctx.stroke();
@@ -32,22 +47,22 @@ export default function DrawSensor(
 
   // Static transparent sensor area
   ctx.beginPath();
-  ctx.fillStyle = "rgba(0, 123, 255, 0.15)";
+  ctx.fillStyle = fillColor;
   ctx.arc(screenX, screenY, maxRadius, 0, 2 * Math.PI);
   ctx.fill();
   ctx.closePath();
 
   // Main circle
   ctx.beginPath();
-  ctx.fillStyle = isSelected ? "#ff0000ff" : "#333";
-  ctx.arc(screenX, screenY, 5, 0, 2 * Math.PI);
+  ctx.fillStyle = isSelected ? selectedColor : deselectColor;
+  ctx.arc(screenX, screenY, sensorCenterDotRad, 0, 2 * Math.PI);
   ctx.fill();
   ctx.closePath();
 
-  // 🏷 Sensor label
-  ctx.font = "10px Arial";
-  ctx.fillStyle = "#000";
+  // Sensor label
+  ctx.font = fontSettings;
+  ctx.fillStyle = fontColor;
   const text = Sensor.name;
   const textWidth = ctx.measureText(text).width;
-  ctx.fillText(text, screenX - textWidth / 2, screenY + 25);
+  ctx.fillText(text, screenX - textWidth / 2, screenY + screenFillYOffset);
 }
