@@ -1,7 +1,10 @@
 export interface CanvasAreaProps {
   sensors: Sensor[];
+  devices: Device[];
   setSensors: React.Dispatch<React.SetStateAction<Sensor[]>>;
+  setDevices: React.Dispatch<React.SetStateAction<Device[]>>;
   selectedSensorId: string | null;
+  selectedDeviceId: string | null;
   onCanvasClick?: (x: number, y: number) => void;
   viewport: { x: number; y: number };
   setViewport: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
@@ -12,6 +15,7 @@ export type Sensor = {
   id: string;
   x: number;
   y: number;
+  object_type: string;
   type: string;
   name: string;
   sensor_rad: number;
@@ -22,9 +26,10 @@ export type Device = {
   id: string;
   x: number;
   y: number;
+  object_type: string;
   type: string;
   name: string;
-  sensor_rad: number;
+  device_rad: number;
   state: Record<string, any>;
 };
 
