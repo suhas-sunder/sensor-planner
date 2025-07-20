@@ -1,7 +1,7 @@
 # app.py
 
 from flask import Flask, request, jsonify
-from models import db, Device, Sensor
+from models import db, Device, Sensor, Session
 from datetime import datetime
 
 app = Flask(__name__)
@@ -190,12 +190,8 @@ def add_or_update_sensor(layout_id):
 
     except Exception as e:
         print(f"Exception occurred: {e}")
-<<<<<<< HEAD
         return jsonify({"error": str(e)}), 500
 
-=======
-        return jsonify({"error": str(e)}), 
->>>>>>> origin/main
 
 
 @app.route("/layouts/<layout_id>/sensors/<sensor_id>", methods=["DELETE"])
@@ -213,6 +209,28 @@ def delete_sensor(layout_id, sensor_id):
     except Exception as e:
         print(f"Exception occurred: {e}")
         return jsonify({"error": str(e)}), 500
+
+@app.route("/session", methods=["POST"])
+def create_session():
+    data = request.get_json()
+    name = data.get("name")
+
+    if not name:
+        return jsonify({"error": "Name is required"}), 400
+
+    new_session = Session(name=name)
+    db.session.add(new_session)
+    db.session.commit()
+
+    return jsonify(new_session.to_dict()), 201
+
+@app.route("/session/<id>", methods=["GET"])
+def get_session(id):
+    session = Session.query.get(id)
+    if not session:
+        return jsonify({"error": "Session not found"}), 404
+
+    return jsonify(session.to_dict()), 200
 
 if __name__ == "__main__":    
     with app.app_context():

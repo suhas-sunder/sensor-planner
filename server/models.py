@@ -13,6 +13,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 from sqlalchemy.ext.hybrid import hybrid_property
 import json
+import uuid
 
 db = SQLAlchemy()
 
@@ -149,6 +150,18 @@ class Device(db.Model):
     def __repr__(self):
         return f"<Device {self.id} {self.device_type} mounted to {self.mounted_to}>"
 
+class Session(db.Model):
+    __tablename__ = "session"
+    
+    id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = db.Column(db.String, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name
+        }
 
 
 class Sensor(db.Model):
@@ -220,3 +233,5 @@ class Log(db.Model):
 
     def __repr__(self) -> str:
         return f"<Log {self.device_id} {self.action} @ {self.timestamp}>"
+    
+
