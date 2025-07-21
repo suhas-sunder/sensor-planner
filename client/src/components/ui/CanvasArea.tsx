@@ -214,8 +214,8 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       <canvas
         ref={canvasRef}
         onDoubleClick={handleClick} // Select sensor on double click
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
+        onMouseDown={handleMouseDown} // Handle mouse down
+        onMouseMove={handleMouseMove} // Handle mouse move
         className="block w-full h-full"
       />
     </div>

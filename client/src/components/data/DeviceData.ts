@@ -4,7 +4,7 @@ export default function DeviceData() {
   const sensors: Device[] = [
     {
       id: "motion-1",
-      x: 1120,
+      x: 100,
       y: 100,
       object_type: "device",
       type: "appliance",
