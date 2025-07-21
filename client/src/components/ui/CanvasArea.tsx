@@ -6,6 +6,8 @@ import DrawRoomWithWalls from "../utils/drawings/DrawRoomWithWalls";
 import DrawOriginMarker from "../utils/drawings/DrawOriginMarker";
 import Scale from "../overlays/Scale.js";
 import DrawDevice from "../utils/drawings/DrawDevice.js";
+import useCanvasSize from "../hooks/useCanvasSize.js";
+import usePulseAnimation from "../hooks/usePulseAnimation.js";
 
 const CanvasArea: React.FC<CanvasAreaProps> = ({
   sensors,
@@ -19,12 +21,13 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   setViewport,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // Create a reference to the canvas
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 }); // Track canvas size
+  const canvasSize = useCanvasSize(canvasRef);
+  const pulsePhase = usePulseAnimation();
+
   const [isPanning, setIsPanning] = useState(false); // Track panning state
   const [lastPan, setLastPan] = useState<{ x: number; y: number } | null>(null); // Track last mouse position
   const [draggingSensorId, setDraggingSensorId] = useState<string | null>(null);
   const [draggingDeviceId, setDraggingDeviceId] = useState<string | null>(null);
-  const [pulsePhase, setPulsePhase] = useState(0);
   const defaultSensorRadius = 30;
 
   // Handle canvas click
@@ -123,45 +126,6 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
     window.addEventListener("mouseup", handleGlobalMouseUp); // Add event listener
     return () => window.removeEventListener("mouseup", handleGlobalMouseUp); // Remove event listener
-  }, []);
-
-  useEffect(() => {
-    let frameId: number; // Animation frame ID
-    let lastTime = performance.now(); // Initialize lastTime
-
-    // Animation loop for pulsating sensors
-    const animate = (currentTime: number) => {
-      const delta = currentTime - lastTime; // Time since last frame
-      lastTime = currentTime; // Update lastTime
-
-      const speed = 0.0001; // Phase speed per ms
-      const maxPulsePhase = 1; // Maximum phase value
-      // pulsePhase is being treated as a normalized phase in the range [0, 1), representing progress through one full animation cycle (like 0% to 100%). Keeps the value looping between 0 and 1
-      setPulsePhase((prev) => (prev + delta * speed) % maxPulsePhase); // Update phase based on time elapsed since last frame and speed constant
-
-      frameId = requestAnimationFrame(animate); // Schedule next frame
-    };
-
-    frameId = requestAnimationFrame(animate); // Start animation
-    return () => cancelAnimationFrame(frameId); // Cancel animation on component unmount
-  }, []);
-
-  // Update canvas size on window resize
-  useEffect(() => {
-    const canvas = canvasRef.current; // Get the canvas
-    if (!canvas) return; // Exit early if not mounted yet
-
-    const resize = () => {
-      canvas.width = canvas.offsetWidth; // update canvas width
-      canvas.height = canvas.offsetHeight; // update canvas height
-      setCanvasSize({ width: canvas.width, height: canvas.height }); // triggers redraw
-    };
-
-    resize(); // initial call
-    const observer = new ResizeObserver(resize); // listen for window resize
-    observer.observe(canvas); // observe the canvas
-
-    return () => observer.disconnect(); // clean up
   }, []);
 
   // Re-draw the canvas whenever sensors, selection, viewport, size, or pulse phase changes
