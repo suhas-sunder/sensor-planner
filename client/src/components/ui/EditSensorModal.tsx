@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 export default function EditSensorModal({
   setShowSensorModal,
@@ -8,44 +9,54 @@ export default function EditSensorModal({
   modalType: string;
 }) {
   const [selectedSensorType, setSelectedSensorType] = useState("motion");
-  const [sensorName, setSensorName] = useState("Motion Sensor");
+  const [sensorName, setSensorName] = useState(
+    `Motion Sensor - ${uuidv4().slice(0, 8)}`
+  );
 
   const sensorTypes = [
-    { value: "motion", label: "Motion" },
-    { value: "temperature", label: "Temperature" },
-    { value: "humidity", label: "Humidity" },
-    { value: "pressure", label: "Pressure" },
-    { value: "co2", label: "CO₂" },
-    { value: "voc", label: "VOC" },
-    { value: "pm", label: "Particulate Matter (PM2.5)" },
-    { value: "air_quality", label: "Air Quality" },
-    { value: "light", label: "Light" },
-    { value: "sound", label: "Sound Level" },
-    { value: "noise", label: "Noise Detection" },
-    { value: "gas", label: "Gas Leak" },
-    { value: "smoke", label: "Smoke Detector" },
-    { value: "leak", label: "Water Leak" },
-    { value: "occupancy", label: "Occupancy" },
-    { value: "presence", label: "Presence Detection" },
-    { value: "vibration", label: "Vibration" },
-    { value: "floor_pressure", label: "Floor Pressure" },
-    { value: "fall", label: "Fall Detection" },
+    { value: "motion", label: "Motion Sensor" },
+    { value: "temperature", label: "Temperature Sensor" },
+    { value: "humidity", label: "Humidity Sensor" },
+    { value: "pressure", label: "Pressure Sensor" },
+    { value: "co2", label: "CO₂ Sensor" },
+    { value: "voc", label: "VOC Sensor" },
+    { value: "pm", label: "Particulate Matter (PM2.5) Sensor" },
+    { value: "air_quality", label: "Air Quality Sensor" },
+    { value: "light", label: "Light Sensor" },
+    { value: "sound", label: "Sound Level Sensor" },
+    { value: "noise", label: "Noise Detection Sensor" },
+    { value: "gas", label: "Gas Leak Sensor" },
+    { value: "smoke", label: "Smoke Detector Sensor" },
+    { value: "leak", label: "Water Leak Sensor" },
+    { value: "occupancy", label: "Occupancy Sensor" },
+    { value: "presence", label: "Presence Detection Sensor" },
+    { value: "vibration", label: "Vibration Sensor" },
+    { value: "floor_pressure", label: "Floor Pressure Sensor" },
+    { value: "fall", label: "Fall Detection Sensor" },
     { value: "thermal", label: "Thermal Sensor" },
     { value: "infrared", label: "Infrared Sensor" },
-    { value: "bluetooth", label: "Bluetooth Beacon" },
-    { value: "wifi", label: "WiFi Coverage Node" },
-    { value: "fridge", label: "Fridge Monitor" },
-    { value: "tv", label: "TV Monitor" },
+    { value: "bluetooth", label: "Bluetooth Beacon Sensor" },
+    { value: "wifi", label: "WiFi Coverage Node Sensor" },
+    { value: "fridge", label: "Fridge Monitor Sensor" },
+    { value: "tv", label: "TV Monitor Sensor" },
     { value: "door", label: "Door Sensor" },
     { value: "window", label: "Window Sensor" },
-    { value: "camera", label: "Camera Module" },
+    { value: "camera", label: "Camera Module Sensor" },
     { value: "ambient", label: "Ambient Sensor" },
     { value: "proximity", label: "Proximity Sensor" },
     { value: "uv", label: "UV Sensor" },
   ];
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setShowSensorModal(false);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <form
+      onSubmit={handleSubmit}
+      className="fixed inset-0 z-50 flex items-center justify-center"
+    >
       {/* Transparent dark backdrop */}
       <button
         onClick={() => setShowSensorModal(false)}
@@ -63,7 +74,7 @@ export default function EditSensorModal({
         <div className="flex flex-col  gap-3 relative min-w-1/4 min-h-1/4 bg-white text-black p-6 rounded-lg shadow-md z-10 pointer-events-auto justify-center  items-center ">
           <h2 className="text-xl font-bold text-slate-700">Add New Sensor</h2>
 
-          <div className="flex flex-col gap-2 mb-3">
+          <div className="flex flex-col gap-2 mb-3 w-full max-w-70">
             <label
               htmlFor="sensor-type"
               className="font-bold text-slate-700 cursor-pointer"
@@ -80,7 +91,7 @@ export default function EditSensorModal({
                 );
                 if (selected) {
                   setSelectedSensorType(selected.value);
-                  setSensorName(`${selected.label} Sensor`);
+                  setSensorName(`${selected.label} - ${uuidv4().slice(0, 8)}`);
                 }
               }}
               className="flex border-2 border-slate-500 w-full p-2 rounded-md cursor-pointer"
@@ -92,7 +103,7 @@ export default function EditSensorModal({
               ))}
             </select>
           </div>
-          <div className="flex flex-col gap-2 mb-3 max-w-40 justify-center  items-center ">
+          <div className="flex flex-col gap-2 mb-3 w-full max-w-70 justify-center  items-center ">
             <label htmlFor="sensor-name" className="font-bold text-slate-700">
               Sensor Name
             </label>
@@ -150,8 +161,14 @@ export default function EditSensorModal({
               className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md h-full cursor-pointer"
             />
           </div>
+          <button
+            type="submit"
+            className="text-white bg-green-600 bg-blue p-2 rounded-md hover:bg-blue-hover font-bold flex justify-center items-center w-full max-w-[12em] hover:scale-[1.02] hover:brightness-110 translate-y-1 mb-3 hover:scale-[1.02] hover:brightness-110 translate-y-1 cursor-pointer"
+          >
+            Submit
+          </button>
         </div>
       )}
-    </div>
+    </form>
   );
 }
