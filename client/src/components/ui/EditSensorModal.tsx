@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import SensorTypes from "../data/SensorTypes";
 
 export default function EditSensorModal({
   setShowSensorModal,
@@ -12,44 +13,32 @@ export default function EditSensorModal({
   const [sensorName, setSensorName] = useState(
     `Motion Sensor - ${uuidv4().slice(0, 8)}`
   );
+  const [selectedConnectivityType, setSelectedConnectivityType] =
+    useState("Wi-Fi 2.4GHz");
+  const [radius, setRadius] = useState(30);
+  const [xPosition, setXPosition] = useState(100);
+  const [yPosition, setYPosition] = useState(100);
 
-  const sensorTypes = [
-    { value: "motion", label: "Motion Sensor" },
-    { value: "temperature", label: "Temperature Sensor" },
-    { value: "humidity", label: "Humidity Sensor" },
-    { value: "pressure", label: "Pressure Sensor" },
-    { value: "co2", label: "CO₂ Sensor" },
-    { value: "voc", label: "VOC Sensor" },
-    { value: "pm", label: "Particulate Matter (PM2.5) Sensor" },
-    { value: "air_quality", label: "Air Quality Sensor" },
-    { value: "light", label: "Light Sensor" },
-    { value: "sound", label: "Sound Level Sensor" },
-    { value: "noise", label: "Noise Detection Sensor" },
-    { value: "gas", label: "Gas Leak Sensor" },
-    { value: "smoke", label: "Smoke Detector Sensor" },
-    { value: "leak", label: "Water Leak Sensor" },
-    { value: "occupancy", label: "Occupancy Sensor" },
-    { value: "presence", label: "Presence Detection Sensor" },
-    { value: "vibration", label: "Vibration Sensor" },
-    { value: "floor_pressure", label: "Floor Pressure Sensor" },
-    { value: "fall", label: "Fall Detection Sensor" },
-    { value: "thermal", label: "Thermal Sensor" },
-    { value: "infrared", label: "Infrared Sensor" },
-    { value: "bluetooth", label: "Bluetooth Beacon Sensor" },
-    { value: "wifi", label: "WiFi Coverage Node Sensor" },
-    { value: "fridge", label: "Fridge Monitor Sensor" },
-    { value: "tv", label: "TV Monitor Sensor" },
-    { value: "door", label: "Door Sensor" },
-    { value: "window", label: "Window Sensor" },
-    { value: "camera", label: "Camera Module Sensor" },
-    { value: "ambient", label: "Ambient Sensor" },
-    { value: "proximity", label: "Proximity Sensor" },
-    { value: "uv", label: "UV Sensor" },
-  ];
+  const sensorTypes = useMemo(() => {
+    return SensorTypes();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setShowSensorModal(false);
+
+    const formData = new FormData(e.currentTarget);
+
+    const sensorData = {
+      sensor_type: formData.get("sensor_type"),
+      sensor_name: formData.get("sensor_name"),
+      x_position: Number(formData.get("x_position")),
+      y_position: Number(formData.get("y_position")),
+      connectivity_type: formData.get("connectivity_type"),
+      sensor_radius: Number(formData.get("sensor_radius")),
+    };
+
+    console.log(sensorData);
   };
 
   return (
@@ -87,18 +76,18 @@ export default function EditSensorModal({
               value={selectedSensorType}
               onChange={(e) => {
                 const selected = sensorTypes.find(
-                  (t) => t.value === e.target.value
+                  (sensor) => sensor.type === e.target.value
                 );
                 if (selected) {
-                  setSelectedSensorType(selected.value);
+                  setSelectedSensorType(selected.type);
                   setSensorName(`${selected.label} - ${uuidv4().slice(0, 8)}`);
                 }
               }}
               className="flex border-2 border-slate-500 w-full p-2 rounded-md cursor-pointer"
             >
-              {sensorTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
+              {sensorTypes.map((sensor) => (
+                <option key={sensor.type} value={sensor.type}>
+                  {sensor.label}
                 </option>
               ))}
             </select>
@@ -111,9 +100,11 @@ export default function EditSensorModal({
               id="sensor-name"
               name="sensor_name"
               type="text"
+              required
               placeholder="Enter radius in meters"
+              onChange={(e) => setSensorName(e.target.value)}
               value={sensorName}
-              className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md h-full cursor-pointer"
+              className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md cursor-pointer"
             />
           </div>
 
@@ -129,9 +120,11 @@ export default function EditSensorModal({
                 id="x-position"
                 name="x_position"
                 type="number"
+                required
                 placeholder="Enter position in meters"
-                value={100}
-                className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md h-full cursor-pointer max-w-40"
+                value={xPosition}
+                onChange={(e) => setXPosition(Number(e.target.value))}
+                className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md cursor-pointer max-w-40"
               />
             </div>
             <div className="flex justify-center  items-center flex-col gap-2">
@@ -142,12 +135,38 @@ export default function EditSensorModal({
                 id="y-position"
                 name="y_position"
                 type="number"
+                required
                 placeholder="Enter position in meters"
-                value={100}
-                className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md h-full cursor-pointer max-w-40"
+                onChange={(e) => setYPosition(Number(e.target.value))}
+                value={yPosition}
+                className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md cursor-pointer max-w-40"
               />
             </div>
           </div>
+          <div className="flex flex-col gap-2 mb-3 w-full max-w-70">
+            <label
+              htmlFor="connectivity-type"
+              className="font-bold text-slate-700 cursor-pointer"
+            >
+              Type of Connectivity
+            </label>
+            <select
+              id="connectivity-type"
+              name="connectivity_type"
+              value={selectedConnectivityType}
+              onChange={(e) => setSelectedConnectivityType(e.target.value)}
+              className="flex border-2 border-slate-500 w-full p-2 rounded-md cursor-pointer"
+            >
+              {sensorTypes
+                .find((sensor) => sensor.type === selectedSensorType)
+                ?.connectivity.map((connectivity) => (
+                  <option key={connectivity} value={connectivity}>
+                    {connectivity}
+                  </option>
+                ))}
+            </select>
+          </div>
+
           <div className="flex flex-col gap-2 mb-3 max-w-40 justify-center  items-center ">
             <label htmlFor="sensor-radius" className="font-bold text-slate-700">
               Coverage Radius (m)
@@ -157,13 +176,16 @@ export default function EditSensorModal({
               name="sensor_radius"
               type="number"
               placeholder="Enter radius in meters"
-              value={30}
-              className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md h-full cursor-pointer"
+              required
+              onChange={(e) => setRadius(Number(e.target.value))}
+              value={radius}
+              className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md cursor-pointer"
             />
           </div>
+
           <button
             type="submit"
-            className="text-white bg-green-600 bg-blue p-2 rounded-md hover:bg-blue-hover font-bold flex justify-center items-center w-full max-w-[12em] hover:scale-[1.02] hover:brightness-110 translate-y-1 mb-3 hover:scale-[1.02] hover:brightness-110 translate-y-1 cursor-pointer"
+            className="text-white bg-green-600 bg-blue p-2 rounded-md hover:bg-blue-hover font-bold flex justify-center items-center w-full max-w-[12em] hover:scale-[1.02] hover:brightness-110 translate-y-1 mb-3 cursor-pointer"
           >
             Submit
           </button>
