@@ -1,85 +1,68 @@
-import { Circle, IText, type Canvas } from "fabric";
 import type { Sensor } from "../other/Types";
 
+// Function to draw a Sensor on the canvas
 export default function DrawSensor(
-  canvas: Canvas,
-  sensor: Sensor,
+  ctx: CanvasRenderingContext2D,
+  Sensor: Sensor,
   isSelected: boolean,
   viewport: { x: number; y: number },
-  pulsePhase: number,
-  onSensorMove?: (id: string, newX: number, newY: number) => void
-) {
-  const screenX = sensor.x - viewport.x;
-  const screenY = sensor.y - viewport.y;
-  const baseRadius = sensor.sensor_rad || 30;
+  pulsePhase: number
+): void {
+  const screenX = Sensor.x - viewport.x;
+  const screenY = Sensor.y - viewport.y;
+  const minRadius = 0.1;
+  const screenFillYOffset = 25;
   const sensorCenterDotRad = 5;
-  const offsetY = 25;
+  const phaseOffset = 0.5;
+  const phaseWrap = 1;
 
-  // Pulsing rings (non-interactive)
-  [pulsePhase, (pulsePhase + 0.5) % 1].forEach((p) => {
-    canvas.add(
-      new Circle({
-        left: screenX,
-        top: screenY,
-        originX: "center",
-        originY: "center",
-        radius: Math.max(0.1, baseRadius * p),
-        stroke: "rgba(0, 123, 255, 0.2)",
-        strokeWidth: 1,
-        fill: "",
-        selectable: false,
-        evented: false,
-      })
-    );
-  });
+  const pulseColor = "rgba(0, 123, 255, 0.2)";
+  const fillColor = "rgba(0, 123, 255, 0.15)";
+  const selectedColor = "#ff0000ff";
+  const deselectColor = "#333";
+  const fontSettings = "10px Arial";
+  const fontColor = "#000";
 
-  // Static transparent range
-  canvas.add(
-    new Circle({
-      left: screenX,
-      top: screenY,
-      originX: "center",
-      originY: "center",
-      radius: baseRadius,
-      fill: "rgba(0, 123, 255, 0.15)",
-      selectable: false,
-      evented: false,
-    })
+  const maxRadius = Math.max(minRadius, Sensor.sensor_rad || 30);
+  const animatedRadius = Math.max(minRadius, pulsePhase * maxRadius);
+  const secondaryRadius = Math.max(
+    minRadius,
+    ((pulsePhase + phaseOffset) % phaseWrap) * maxRadius
   );
 
-  // Draggable center dot (this moves the sensor)
-  const center = new Circle({
-    left: screenX,
-    top: screenY,
-    originX: "center",
-    originY: "center",
-    radius: sensorCenterDotRad,
-    fill: isSelected ? "#ff0000ff" : "#333",
-    hasBorders: false,
-    hasControls: false,
-    selectable: true,
-    evented: true,
-  });
+  // Pulsing ring effect
+  ctx.beginPath();
+  ctx.strokeStyle = pulseColor;
+  ctx.lineWidth = 2;
+  ctx.arc(screenX, screenY, animatedRadius, 0, 2 * Math.PI);
+  ctx.stroke();
+  ctx.closePath();
 
-  center.on("moving", () => {
-    const newX = center.left! + viewport.x;
-    const newY = center.top! + viewport.y;
-    onSensorMove?.(sensor.id, newX, newY);
-  });
+  ctx.beginPath();
+  ctx.strokeStyle = pulseColor;
+  ctx.lineWidth = 1;
+  ctx.arc(screenX, screenY, secondaryRadius, 0, 2 * Math.PI);
+  ctx.stroke();
+  ctx.closePath();
 
-  canvas.add(center);
+  // Static transparent sensor area
+  ctx.beginPath();
+  ctx.fillStyle = fillColor;
+  ctx.arc(screenX, screenY, maxRadius, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.closePath();
 
-  // Label
-  canvas.add(
-    new IText(sensor.name, {
-      left: screenX,
-      top: screenY + offsetY,
-      fontSize: 10,
-      fill: "#000",
-      originX: "center",
-      originY: "center",
-      selectable: false,
-      evented: false,
-    })
-  );
+  // Main circle
+  ctx.beginPath();
+  ctx.fillStyle = isSelected ? selectedColor : deselectColor;
+  ctx.arc(screenX, screenY, sensorCenterDotRad, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.closePath();
+
+  // Sensor label
+  ctx.font = fontSettings;
+  ctx.fillStyle = fontColor;
+  const text = Sensor.name;
+  const textWidth = ctx.measureText(text).width;
+  ctx.fillText(text, screenX - textWidth / 2, screenY + screenFillYOffset);
 }

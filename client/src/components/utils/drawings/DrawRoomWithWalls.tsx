@@ -1,125 +1,76 @@
-import { Rect, IText, type Canvas } from "fabric";
 import type { Room } from "../other/Types";
 
+// Function to draw a room with walls
 export default function DrawRoomWithWalls(
-  canvas: Canvas,
+  ctx: CanvasRenderingContext2D,
   room: Room,
   viewport: { x: number; y: number },
   wallThickness = 3
 ) {
   const screenX = room.x - viewport.x;
   const screenY = room.y - viewport.y;
-  const wallColor = "#020617";
-  const doorColor = "#ffffff";
-  const windowColor = "#66ccff";
+
+  ctx.save();
 
   const walls = {
-    top: {
-      left: screenX,
-      top: screenY,
-      width: room.width,
-      height: wallThickness,
-    },
+    top: { x: screenX, y: screenY, w: room.width, h: wallThickness },
     bottom: {
-      left: screenX,
-      top: screenY + room.height - wallThickness,
-      width: room.width,
-      height: wallThickness,
+      x: screenX,
+      y: screenY + room.height - wallThickness,
+      w: room.width,
+      h: wallThickness,
     },
-    left: {
-      left: screenX,
-      top: screenY,
-      width: wallThickness,
-      height: room.height,
-    },
+    left: { x: screenX, y: screenY, w: wallThickness, h: room.height },
     right: {
-      left: screenX + room.width - wallThickness,
-      top: screenY,
-      width: wallThickness,
-      height: room.height,
+      x: screenX + room.width - wallThickness,
+      y: screenY,
+      w: wallThickness,
+      h: room.height,
     },
   };
 
-  // Draw walls
-  Object.values(walls).forEach((wall) => {
-    canvas.add(
-      new Rect({
-        ...wall,
-        fill: wallColor,
-        selectable: false,
-        evented: false,
-      })
-    );
-  });
+  // Draw all walls
+  ctx.fillStyle = "#020617";
+  for (const wall of Object.values(walls)) {
+    ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+  }
 
-  // Draw doors
+  // Draw doors (as white sections)
   room.doors?.forEach(({ side, offset, length = 30 }) => {
     const wall = walls[side];
-    const doorRect =
-      side === "top" || side === "bottom"
-        ? {
-            left: wall.left + offset,
-            top: wall.top,
-            width: length,
-            height: wall.height,
-          }
-        : {
-            left: wall.left,
-            top: wall.top + offset,
-            width: wall.width,
-            height: length,
-          };
+    ctx.fillStyle = "#ffffff";
+    if (side === "top" || side === "bottom") {
+      ctx.fillRect(wall.x + offset, wall.y, length, wall.h);
+    } else {
+      ctx.fillRect(wall.x, wall.y + offset, wall.w, length);
+    }
 
-    canvas.add(
-      new Rect({
-        ...doorRect,
-        fill: doorColor,
-        selectable: false,
-        evented: false,
-      })
-    );
+    // Draw small brown rectangle to indicate door
+    // ctx.fillStyle = "#654321";
+    // if (side === "top" || side === "bottom") {
+    //   ctx.fillRect(wall.x + offset, wall.y, 8, wall.h);
+    // } else {
+    //   ctx.fillRect(wall.x, wall.y + offset, wall.w, 8);
+    // }
   });
 
-  // Draw windows
+  // Draw windows (as light blue segments)
   room.windows?.forEach(({ side, offset, length = 30 }) => {
     const wall = walls[side];
-    const windowRect =
-      side === "top" || side === "bottom"
-        ? {
-            left: wall.left + offset,
-            top: wall.top,
-            width: length,
-            height: 4,
-          }
-        : {
-            left: wall.left,
-            top: wall.top + offset,
-            width: 4,
-            height: length,
-          };
-
-    canvas.add(
-      new Rect({
-        ...windowRect,
-        fill: windowColor,
-        selectable: false,
-        evented: false,
-      })
-    );
+    ctx.fillStyle = "#66ccff";
+    if (side === "top" || side === "bottom") {
+      ctx.fillRect(wall.x + offset, wall.y, length, 4);
+    } else {
+      ctx.fillRect(wall.x, wall.y + offset, 4, length);
+    }
   });
 
-  // Draw room label
-  const label = new IText(room.name, {
-    left: screenX + room.width / 2,
-    top: screenY + room.height / 2,
-    fontSize: 14,
-    fontFamily: "sans-serif",
-    fill: wallColor,
-    originX: "center",
-    originY: "center",
-    selectable: false,
-    evented: false,
-  });
+  // Room label
+  ctx.font = "14px sans-serif";
+  ctx.fillStyle = "#020617";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(room.name, screenX + room.width / 2, screenY + room.height / 2);
 
-  canvas.add(label);
+  ctx.restore();
 }
