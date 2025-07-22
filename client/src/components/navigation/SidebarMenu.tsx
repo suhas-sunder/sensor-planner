@@ -7,6 +7,7 @@ export default function SidebarMenu() {
   const [showSensorModal, setShowSensorModal] = useState(false);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
 
+
   return (
     <>
       {showSensorModal && (
