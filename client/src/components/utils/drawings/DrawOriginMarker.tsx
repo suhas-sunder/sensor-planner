@@ -1,24 +1,42 @@
+import { Line, IText, type Canvas } from "fabric";
+
 export default function DrawOriginMarker(
-  ctx: CanvasRenderingContext2D,
+  canvas: Canvas,
   viewport: { x: number; y: number }
 ) {
-  const originX = 0 - viewport.x;
-  const originY = 0 - viewport.y;
+  const originX = -viewport.x;
+  const originY = -viewport.y;
 
-  // Draw crosshair
-  ctx.strokeStyle = "red";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(originX - 5, originY);
-  ctx.lineTo(originX + 5, originY);
-  ctx.moveTo(originX, originY - 5);
-  ctx.lineTo(originX, originY + 5);
-  ctx.stroke();
+  // Crosshair lines (horizontal and vertical)
+  const crosshairLines = [
+    new Line([originX - 5, originY, originX + 5, originY], {
+      stroke: "red",
+      strokeWidth: 1,
+      selectable: false,
+      evented: false,
+    }),
+    new Line([originX, originY - 5, originX, originY + 5], {
+      stroke: "red",
+      strokeWidth: 1,
+      selectable: false,
+      evented: false,
+    }),
+  ];
 
-  // Draw label
-  ctx.fillStyle = "red";
-  ctx.font = "12px monospace";
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.fillText("Origin (0m, 0m)", originX - 120, originY - 6);
+  crosshairLines.forEach((line) => canvas.add(line));
+
+  // Label text: "Origin (0m, 0m)"
+  const label = new IText("Origin (0m, 0m)", {
+    left: originX - 120,
+    top: originY - 6,
+    fontSize: 12,
+    fontFamily: "monospace",
+    fill: "red",
+    selectable: false,
+    evented: false,
+    originX: "left",
+    originY: "top",
+  });
+
+  canvas.add(label);
 }
