@@ -11,6 +11,7 @@ export default function SensorData() {
       name: "Motion Sensor 1",
       sensor_rad: 60,
       state: { motion: false },
+      connectivity: ["Wi-Fi 2.4GHz", "Wi-Fi 5GHz", "Zigbee 3.0", "Z-Wave"],
     },
     // {
     //   id: "motion-2",

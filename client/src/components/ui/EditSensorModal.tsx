@@ -57,7 +57,6 @@ export default function EditSensorModal({
       {modalType === "edit" ? (
         <div className="relative bg-white text-black p-6 rounded-lg shadow-md z-10 pointer-events-auto">
           <h2 className="text-xl font-bold mb-4">Edit Sensor</h2>
-          <p>Your content here</p>
         </div>
       ) : (
         <div className="flex flex-col  gap-3 relative min-w-1/4 min-h-1/4 bg-white text-black p-6 rounded-lg shadow-md z-10 pointer-events-auto justify-center  items-center ">
