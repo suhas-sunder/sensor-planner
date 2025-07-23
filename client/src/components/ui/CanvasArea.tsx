@@ -9,6 +9,7 @@ import DrawDevice from "../utils/drawings/DrawDevice.js";
 import useCanvasSize from "../hooks/useCanvasSize.js";
 import usePulseAnimation from "../hooks/usePulseAnimation.js";
 import useSensorDeviceContext from "../hooks/useSensorDeviceContext.js";
+import DetectTouchingNodes from "../utils/computations/DetectTouchingNodes.js";
 
 const CanvasArea: React.FC<CanvasAreaProps> = ({
   selectedNodeId,
@@ -115,16 +116,32 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   // Handle mouse up
   useEffect(() => {
     const handleGlobalMouseUp = () => {
-      setIsPanning(false); // Stop panning
-      // Stop dragging
+      setIsPanning(false);
       setDraggingDeviceId(null);
       setDraggingSensorId(null);
-      setLastPan(null); // Reset last mouse position
+      setLastPan(null);
+
+      // Only recalculate if something was being dragged
+      if (draggingDeviceId || draggingSensorId) {
+        const { updatedSensors, updatedDevices } = DetectTouchingNodes(
+          sensors,
+          devices
+        );
+        setSensors(updatedSensors);
+        setDevices(updatedDevices);
+      }
     };
 
-    window.addEventListener("mouseup", handleGlobalMouseUp); // Add event listener
-    return () => window.removeEventListener("mouseup", handleGlobalMouseUp); // Remove event listener
-  }, []);
+    window.addEventListener("mouseup", handleGlobalMouseUp);
+    return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+  }, [
+    sensors,
+    devices,
+    draggingDeviceId,
+    draggingSensorId,
+    setDevices,
+    setSensors,
+  ]);
 
   // Re-draw the canvas whenever sensors, selection, viewport, size, or pulse phase changes
   useEffect(() => {
