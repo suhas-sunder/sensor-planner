@@ -14,6 +14,7 @@ export type Sensor = {
   name: string;
   sensor_rad: number;
   connectivity: string[];
+  connectedDeviceIds?: string[];
 };
 
 export type Device = {
@@ -27,6 +28,7 @@ export type Device = {
   connectivity: string[];
   compatibleSensors: string[];
   interferenceProtocols: string[];
+  connectedSensorIds?: string[];
 };
 
 type WallSide = "top" | "bottom" | "left" | "right";
