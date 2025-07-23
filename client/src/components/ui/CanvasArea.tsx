@@ -8,10 +8,7 @@ import Scale from "../overlays/Scale.js";
 import DrawDevice from "../utils/drawings/DrawDevice.js";
 import useCanvasSize from "../hooks/useCanvasSize.js";
 import usePulseAnimation from "../hooks/usePulseAnimation.js";
-import {
-  useDeviceContext,
-  useSensorContext,
-} from "../context/SensorDeviceContext.js";
+import useSensorDeviceContext from "../hooks/useSensorDeviceContext.js";
 
 const CanvasArea: React.FC<CanvasAreaProps> = ({
   selectedSensorId,
@@ -20,8 +17,9 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   viewport,
   setViewport,
 }) => {
-  const { sensors, setSensors } = useSensorContext();
-  const { devices, setDevices } = useDeviceContext();
+  const { sensors, setSensors, devices, setDevices } = useSensorDeviceContext();
+
+  
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // Create a reference to the canvas
   const canvasSize = useCanvasSize(canvasRef);
   const pulsePhase = usePulseAnimation();
@@ -146,6 +144,16 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       DrawRoomWithWalls(ctx, room, viewport); // Draw all rooms
     });
 
+    devices.forEach((Device: Device) => {
+      DrawDevice(
+        ctx, // Canvas drawing context
+        Device, // The current Sensor to draw
+        Device.id === selectedDeviceId, // Highlight if this Sensor is selected
+        viewport, // Viewport offset (for panning)
+        pulsePhase // Current animation state for pulsing effect
+      );
+    });
+
     // Loop over each Sensor and draw it
     sensors.forEach((Sensor: Sensor) => {
       DrawSensor(
@@ -156,19 +164,11 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
         pulsePhase // Current animation state for pulsing effect
       );
     });
-
-    devices.forEach((Device: Device) => {
-      DrawDevice(
-        ctx, // Canvas drawing context
-        Device, // The current Sensor to draw
-        Device.id === selectedDeviceId, // Highlight if this Sensor is selected
-        viewport, // Viewport offset (for panning)
-        pulsePhase // Current animation state for pulsing effect
-      );
-    });
   }, [
     sensors, // Redraw if sensors added, removed, or updated
     selectedSensorId, // Redraw if selection changes (to highlight)
+    devices, // Redraw if devices added, removed, or updated
+    selectedDeviceId, // Redraw if device selection changes
     viewport, // Redraw when panning the canvas
     canvasSize, // Redraw when canvas is resized
     pulsePhase, // Redraw every animation frame to reflect pulse animation
