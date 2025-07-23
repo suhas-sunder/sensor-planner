@@ -11,15 +11,13 @@ import usePulseAnimation from "../hooks/usePulseAnimation.js";
 import useSensorDeviceContext from "../hooks/useSensorDeviceContext.js";
 
 const CanvasArea: React.FC<CanvasAreaProps> = ({
-  selectedSensorId,
-  selectedDeviceId,
+  selectedNodeId,
   onCanvasClick,
   viewport,
   setViewport,
 }) => {
   const { sensors, setSensors, devices, setDevices } = useSensorDeviceContext();
 
-  
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // Create a reference to the canvas
   const canvasSize = useCanvasSize(canvasRef);
   const pulsePhase = usePulseAnimation();
@@ -148,7 +146,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       DrawDevice(
         ctx, // Canvas drawing context
         Device, // The current Sensor to draw
-        Device.id === selectedDeviceId, // Highlight if this Sensor is selected
+        Device.id === selectedNodeId, // Highlight if this Sensor is selected
         viewport, // Viewport offset (for panning)
         pulsePhase // Current animation state for pulsing effect
       );
@@ -159,16 +157,15 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       DrawSensor(
         ctx, // Canvas drawing context
         Sensor, // The current Sensor to draw
-        Sensor.id === selectedSensorId, // Highlight if this Sensor is selected
+        Sensor.id === selectedNodeId, // Highlight if this Sensor is selected
         viewport, // Viewport offset (for panning)
         pulsePhase // Current animation state for pulsing effect
       );
     });
   }, [
     sensors, // Redraw if sensors added, removed, or updated
-    selectedSensorId, // Redraw if selection changes (to highlight)
     devices, // Redraw if devices added, removed, or updated
-    selectedDeviceId, // Redraw if device selection changes
+    selectedNodeId, // Redraw if node selection changes
     viewport, // Redraw when panning the canvas
     canvasSize, // Redraw when canvas is resized
     pulsePhase, // Redraw every animation frame to reflect pulse animation

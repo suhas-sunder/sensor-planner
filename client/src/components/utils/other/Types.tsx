@@ -1,6 +1,5 @@
 export interface CanvasAreaProps {
-  selectedSensorId: string | null;
-  selectedDeviceId: string | null;
+  selectedNodeId: string | null;
   onCanvasClick?: (x: number, y: number) => void;
   viewport: { x: number; y: number };
   setViewport: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;

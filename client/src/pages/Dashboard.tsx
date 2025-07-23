@@ -1,30 +1,45 @@
 import { useEffect, useState } from "react";
 import CanvasArea from "../components/ui/CanvasArea";
 import SidebarMenu from "../components/navigation/SidebarMenu.js";
-
-import { useSensorContext } from "../components/hooks/useSensorDeviceContext.js";
-import type { Sensor } from "../components/utils/other/Types.js";
+import type { Device, Sensor } from "../components/utils/other/Types.js";
+import useSensorDeviceContext from "../components/hooks/useSensorDeviceContext.js";
 
 export default function Dashboard() {
-  const { sensors } = useSensorContext();
+  const { sensors, devices } = useSensorDeviceContext();
   const [viewport, setViewport] = useState({ x: 0, y: 0 });
 
-  const [selectedSensorId, setSelectedSensorId] = useState<string | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   const handleCanvasClick = (x: number, y: number): void => {
-    const clicked = sensors.find(
+    // Check if a sensor is clicked
+    const clickedSensor = sensors.find(
       (sensor: Sensor) =>
         Math.hypot(sensor.x - x, sensor.y - y) <= (sensor.sensor_rad || 30)
     );
 
-    if (clicked) {
-      if (selectedSensorId === clicked.id) {
-        setSelectedSensorId(null);
+    if (clickedSensor) {
+      if (selectedNodeId === clickedSensor.id) {
+        setSelectedNodeId(null);
       } else {
-        setSelectedSensorId(clicked.id);
+        setSelectedNodeId(clickedSensor.id);
       }
+      return;
     } else {
-      setSelectedSensorId(null);
+      setSelectedNodeId(null);
+    }
+
+    // Check if a device is clicked
+    const clickedDevice = devices.find(
+      (device: Device) =>
+        Math.hypot(device.x - x, device.y - y) <= (device.device_rad || 30)
+    );
+
+    if (clickedDevice) {
+      setSelectedNodeId((prev) =>
+        prev === clickedDevice.id ? null : clickedDevice.id
+      );
+    } else {
+      setSelectedNodeId(null);
     }
   };
 
@@ -38,8 +53,7 @@ export default function Dashboard() {
     <div className="flex w-full h-screen bg-black">
       <SidebarMenu />
       <CanvasArea
-        selectedDeviceId={null}
-        selectedSensorId={selectedSensorId}
+        selectedNodeId={selectedNodeId}
         onCanvasClick={handleCanvasClick}
         viewport={viewport}
         setViewport={setViewport}

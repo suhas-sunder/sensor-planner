@@ -19,7 +19,7 @@ export default function DrawSensor(
   const pulseColor = "rgba(0, 123, 255, 0.2)";
   const fillColor = "rgba(0, 123, 255, 0.15)";
   const selectedColor = "#ff0000ff";
-  const deselectColor = "#333";
+  const innerColor = "#333";
   const fontSettings = "10px Arial";
   const fontColor = "#000";
 
@@ -54,7 +54,7 @@ export default function DrawSensor(
 
   // Main circle
   ctx.beginPath();
-  ctx.fillStyle = isSelected ? selectedColor : deselectColor;
+  ctx.fillStyle = isSelected ? selectedColor : innerColor;
   ctx.arc(screenX, screenY, sensorCenterDotRad, 0, 2 * Math.PI);
   ctx.fill();
   ctx.closePath();

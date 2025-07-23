@@ -17,7 +17,6 @@ export default function DrawDevice(
   const innerSize = 10;
   const innerColor = "#053b01ff"; // dark green
   const selectedColor = "#ff0000ff";
-  const borderColor = isSelected ? selectedColor : "#222";
 
   const fontSettings = "10px Arial";
   const fontColor = "#000";
@@ -45,12 +44,10 @@ export default function DrawDevice(
 
   // Inner square
   ctx.beginPath();
-  ctx.fillStyle = innerColor;
+  ctx.fillStyle = isSelected ? selectedColor : innerColor;
   drawRoundedSquare(ctx, screenX, screenY, innerSize, 2);
   ctx.fill();
-  ctx.strokeStyle = borderColor;
   ctx.lineWidth = 1;
-  ctx.stroke();
   ctx.closePath();
 
   // Label
