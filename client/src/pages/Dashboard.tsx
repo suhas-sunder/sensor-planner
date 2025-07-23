@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CanvasArea from "../components/ui/CanvasArea";
 import SidebarMenu from "../components/navigation/SidebarMenu.js";
 
-import { useSensorContext } from "../components/context/SensorDeviceContext.js";
+import { useSensorContext } from "../components/hooks/useSensorDeviceContext.js";
 import type { Sensor } from "../components/utils/other/Types.js";
 
 export default function Dashboard() {

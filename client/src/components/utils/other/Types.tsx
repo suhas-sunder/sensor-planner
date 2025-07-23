@@ -11,26 +11,23 @@ export type Sensor = {
   id: string;
   x: number;
   y: number;
-  object_type: string;
   type: string;
   name: string;
   sensor_rad: number;
   connectivity: string[];
-  state: Record<string, unknown>;
 };
 
 export type Device = {
   id: string;
   x: number;
   y: number;
-  object_type: string;
   type: string;
+  label: string;
   name: string;
   device_rad: number;
   connectivity: string[];
   compatibleSensors: string[];
   interferenceProtocols: string[];
-  state: Record<string, unknown>;
 };
 
 type WallSide = "top" | "bottom" | "left" | "right";
