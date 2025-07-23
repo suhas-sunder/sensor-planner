@@ -43,7 +43,7 @@ export default function SensorTypes() {
       connectivity: ["Wi-Fi 2.4GHz", "BLE 5.0", "Zigbee 3.0"],
     },
     {
-      type: "pm",
+      type: "particulate_matter",
       label: "Particulate Matter (PM2.5) Sensor",
       connectivity: ["Wi-Fi 2.4GHz", "Wi-Fi 5GHz", "Zigbee 3.0", "NB-IoT"],
     },
@@ -109,7 +109,7 @@ export default function SensorTypes() {
       connectivity: ["BLE 5.0", "Wi-Fi 2.4GHz", "LoRaWAN"],
     },
     {
-      type: "fall",
+      type: "fall_detection",
       label: "Fall Detection Sensor",
       connectivity: ["Wi-Fi 2.4GHz", "BLE 5.0", "LTE", "NB-IoT"],
     },
@@ -169,7 +169,7 @@ export default function SensorTypes() {
       connectivity: ["BLE 5.0", "Zigbee 3.0"],
     },
     {
-      type: "uv",
+      type: "ultra_violet",
       label: "UV Sensor",
       connectivity: ["BLE 5.0", "Zigbee 3.0", "Wi-Fi 2.4GHz"],
     },
