@@ -1,4 +1,29 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+
+// SensorData.ts
+const SensorData = [
+  {
+    id: "sensor-001",
+    type: "motion",
+    name: "Motion Sensor 1",
+    x: 100,
+    y: 200,
+    sensor_rad: 30,
+    connectivity: "Wi-Fi 2.4GHz",
+  },
+];
+
+const DeviceData = [
+  {
+    id: "device-001",
+    type: "appliance",
+    label: "Smart Thermostat",
+    connectivity: "Wi-Fi 5GHz",
+    x: 300,
+    y: 300,
+    device_radius: 50,
+  },
+];
 
 // Sensor context
 const SensorContext = createContext<any>(null);
@@ -14,8 +39,18 @@ export const SensorDeviceProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [sensors, setSensors] = useState([]);
-  const [devices, setDevices] = useState([]);
+  const [sensors, setSensors] = useState(SensorData);
+  const [devices, setDevices] = useState(DeviceData);
+
+  // 👇 Log any time sensors update
+  useEffect(() => {
+    console.log("[SensorDeviceProvider] sensors updated:", sensors);
+  }, [sensors]);
+
+  // 👇 Log any time devices update
+  useEffect(() => {
+    console.log("[SensorDeviceProvider] devices updated:", devices);
+  }, [devices]);
 
   return (
     <SensorContext.Provider value={{ sensors, setSensors }}>
