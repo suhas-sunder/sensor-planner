@@ -1,8 +1,4 @@
 export interface CanvasAreaProps {
-  sensors: Sensor[];
-  devices: Device[];
-  setSensors: React.Dispatch<React.SetStateAction<Sensor[]>>;
-  setDevices: React.Dispatch<React.SetStateAction<Device[]>>;
   selectedSensorId: string | null;
   selectedDeviceId: string | null;
   onCanvasClick?: (x: number, y: number) => void;

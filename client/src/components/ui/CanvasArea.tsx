@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { CanvasAreaProps } from "../utils/other/Types";
+import type { CanvasAreaProps, Device, Sensor } from "../utils/other/Types";
 import RoomData from "../data/RoomData.js";
 import DrawSensor from "../utils/drawings/DrawSensor.js";
 import DrawRoomWithWalls from "../utils/drawings/DrawRoomWithWalls";
@@ -8,18 +8,20 @@ import Scale from "../overlays/Scale.js";
 import DrawDevice from "../utils/drawings/DrawDevice.js";
 import useCanvasSize from "../hooks/useCanvasSize.js";
 import usePulseAnimation from "../hooks/usePulseAnimation.js";
+import {
+  useDeviceContext,
+  useSensorContext,
+} from "../context/SensorDeviceContext.js";
 
 const CanvasArea: React.FC<CanvasAreaProps> = ({
-  sensors,
-  devices,
-  setSensors,
-  setDevices,
   selectedSensorId,
   selectedDeviceId,
   onCanvasClick,
   viewport,
   setViewport,
 }) => {
+  const { sensors, setSensors } = useSensorContext();
+  const { devices, setDevices } = useDeviceContext();
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // Create a reference to the canvas
   const canvasSize = useCanvasSize(canvasRef);
   const pulsePhase = usePulseAnimation();
@@ -57,14 +59,14 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     // Find the sensor that was clicked.
     // Math.hypot is the Pythagorean theorem for distance calculation to find the closest target from the mouse
     const targetSensor = sensors.find(
-      (s) =>
+      (s: Sensor) =>
         Math.hypot(s.x - mouseX, s.y - mouseY) <=
         (s.sensor_rad || defaultSensorRadius)
     );
 
     // Find the device that was clicked
     const targetDevice = devices.find(
-      (d) =>
+      (d: Device) =>
         Math.hypot(d.x - mouseX, d.y - mouseY) <=
         (d.device_rad || defaultSensorRadius)
     );
@@ -89,7 +91,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
     if (draggingSensorId) {
       // If a sensor is being dragged, update its position
-      setSensors((prev) =>
+      setSensors((prev: Sensor[]) =>
         prev.map((d) =>
           d.id === draggingSensorId
             ? { ...d, x: d.x + dx, y: d.y + dy, "prev-x": d.x, "prev-y": d.y }
@@ -98,7 +100,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       );
     } else if (draggingDeviceId) {
       // If a device is being dragged, update its position
-      setDevices((prev) =>
+      setDevices((prev: Device[]) =>
         prev.map((d) =>
           d.id === draggingDeviceId
             ? { ...d, x: d.x + dx, y: d.y + dy, "prev-x": d.x, "prev-y": d.y }
@@ -145,7 +147,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     });
 
     // Loop over each Sensor and draw it
-    sensors.forEach((Sensor) => {
+    sensors.forEach((Sensor: Sensor) => {
       DrawSensor(
         ctx, // Canvas drawing context
         Sensor, // The current Sensor to draw
@@ -155,7 +157,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       );
     });
 
-    devices.forEach((Device) => {
+    devices.forEach((Device: Device) => {
       DrawDevice(
         ctx, // Canvas drawing context
         Device, // The current Sensor to draw

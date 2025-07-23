@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import SensorTypes from "../data/SensorTypes";
+import { useSensorContext } from "../context/SensorDeviceContext";
 
 export default function EditSensorModal({
   setShowSensorModal,
@@ -9,15 +10,17 @@ export default function EditSensorModal({
   setShowSensorModal: React.Dispatch<React.SetStateAction<boolean>>;
   modalType: string;
 }) {
+  const { setSensors } = useSensorContext();
+
   const [selectedSensorType, setSelectedSensorType] = useState("motion");
   const [sensorName, setSensorName] = useState(
     `Motion Sensor - ${uuidv4().slice(0, 8)}`
   );
   const [selectedConnectivityType, setSelectedConnectivityType] =
     useState("Wi-Fi 2.4GHz");
-  const [radius, setRadius] = useState(30);
-  const [xPosition, setXPosition] = useState(100);
-  const [yPosition, setYPosition] = useState(100);
+  const [radius, setRadius] = useState("30");
+  const [xPosition, setXPosition] = useState("100");
+  const [yPosition, setYPosition] = useState("100");
 
   const sensorTypes = useMemo(() => {
     return SensorTypes();
@@ -29,16 +32,19 @@ export default function EditSensorModal({
 
     const formData = new FormData(e.currentTarget);
 
-    const sensorData = {
-      sensor_type: formData.get("sensor_type"),
-      sensor_name: formData.get("sensor_name"),
-      x_position: Number(formData.get("x_position")),
-      y_position: Number(formData.get("y_position")),
-      connectivity_type: formData.get("connectivity_type"),
-      sensor_radius: Number(formData.get("sensor_radius")),
+    const submittedData = {
+      id: `${formData.get("sensor_type")} + ${uuidv4()}`,
+      type: formData.get("sensor_type"),
+      name: formData.get("sensor_name"),
+      x: Number(formData.get("x_position")),
+      y: Number(formData.get("y_position")),
+      connectivity: formData.get("connectivity_type"),
+      sensor_rad: Number(formData.get("sensor_radius")),
     };
 
-    console.log(sensorData);
+    setSensors((prev: any) => [...prev, submittedData]);
+
+    console.log(submittedData);
   };
 
   return (
@@ -122,7 +128,7 @@ export default function EditSensorModal({
                 required
                 placeholder="Enter position in meters"
                 value={xPosition}
-                onChange={(e) => setXPosition(Number(e.target.value))}
+                onChange={(e) => setXPosition(e.target.value)}
                 className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md cursor-pointer max-w-40"
               />
             </div>
@@ -136,7 +142,7 @@ export default function EditSensorModal({
                 type="number"
                 required
                 placeholder="Enter position in meters"
-                onChange={(e) => setYPosition(Number(e.target.value))}
+                onChange={(e) => setYPosition(e.target.value)}
                 value={yPosition}
                 className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md cursor-pointer max-w-40"
               />
@@ -176,7 +182,7 @@ export default function EditSensorModal({
               type="number"
               placeholder="Enter radius in meters"
               required
-              onChange={(e) => setRadius(Number(e.target.value))}
+              onChange={(e) => setRadius(e.target.value)}
               value={radius}
               className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md cursor-pointer"
             />
