@@ -1,22 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { SensorContext, DeviceContext } from "./SensorDeviceContextDefs";
-import { SensorData, DeviceData } from "../data/SensorDeviceData";
+import type { Device, Sensor } from "../utils/other/Types";
+import useLocalStorage from "../hooks/useLocalStorage";
 
 export const SensorDeviceProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const [sensors, setSensors] = useState(SensorData);
-  const [devices, setDevices] = useState(DeviceData);
+  const [sensors, setSensors] = useState<Sensor[]>([]);
+  const [devices, setDevices] = useState<Device[]>([]);
 
-  useEffect(() => {
-    console.log("[SensorDeviceProvider] sensors updated:", sensors);
-  }, [sensors]);
+  // Optional: Init user if needed
+  useLocalStorage({ actionType: "user-init-update" });
 
-  useEffect(() => {
-    console.log("[SensorDeviceProvider] devices updated:", devices);
-  }, [devices]);
+  // Load once from localStorage
+  useLocalStorage({
+    actionType: "init",
+    setSensors,
+    setDevices,
+  });
+
+  // Sync whenever sensors/devices update
+  useLocalStorage({
+    actionType: "sync",
+    sensors,
+    devices,
+  });
 
   return (
     <SensorContext.Provider value={{ sensors, setSensors }}>
