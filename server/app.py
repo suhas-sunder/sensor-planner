@@ -1,9 +1,9 @@
 # app.py
 
 from flask import Flask, request, jsonify
-from models import db, Device, Sensor, Session
+from models import db, Device, Sensor, Session, Layout, Room, Log
 from datetime import datetime
-
+import uuid
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///smart.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -232,7 +232,121 @@ def get_session(id):
 
     return jsonify(session.to_dict()), 200
 
-if __name__ == "__main__":    
-    with app.app_context():
-        create_tables()
+
+
+ 
+ 
+ 
+
+ 
+
+@app.route("/layouts", methods=["POST"])
+def create_layout_with_rooms():
+    data = request.get_json()
+
+    try:
+        layout = Layout(
+            id=data.get("id", f"layout-{uuid.uuid4().hex[:8]}"),
+            name=data["name"],
+            owner_session_id=data["owner_session_id"]
+        )
+
+        rooms_data = data.get("rooms", [])
+        for room_data in rooms_data:
+            room = Room(
+                id=room_data.get("id", f"room-{uuid.uuid4().hex[:8]}"),
+                name=room_data["name"],
+                layout=layout,  # attach the room to layout directly
+                x=room_data["x"],
+                y=room_data["y"],
+                width=room_data["width"],
+                height=room_data["height"]
+            )
+            db.session.add(room)
+
+        db.session.add(layout)
+        db.session.commit()
+
+        return jsonify({"message": "Layout and rooms created successfully", "layout_id": layout.id}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route("/layouts", methods=["GET"])
+def get_all_layouts():
+    layouts = Layout.query.all()
+    result = []
+    for layout in layouts:
+        layout_data = {
+            "id": layout.id,
+            "name": layout.name,
+            "owner_session_id": layout.owner_session_id,
+            "rooms": [
+                {
+                    "id": room.id,
+                    "name": room.name,
+                    "x": room.x,
+                    "y": room.y,
+                    "width": room.width,
+                    "height": room.height,
+                } for room in layout.rooms
+            ]
+        }
+        result.append(layout_data)
+    return jsonify(result), 200
+
+@app.route('/layouts/<string:layout_id>', methods=['DELETE'])
+def delete_layout(layout_id):
+    try:
+        layout = Layout.query.filter_by(id=layout_id).first()
+        if not layout:
+            return jsonify({"error": "Layout not found"}), 404
+
+        # Manually delete related rooms, devices, and sensors if no cascade is defined
+        rooms = Room.query.filter_by(layout_id=layout_id).all()
+        for room in rooms:
+            Device.query.filter_by(mounted_to=room.id).delete()
+            Sensor.query.filter_by(mounted_to=room.id).delete()
+            db.session.delete(room)
+
+        # Delete the layout itself
+        db.session.delete(layout)
+        db.session.commit()
+
+        return jsonify({"message": f"Layout {layout_id} deleted successfully"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/logs', methods=['POST'])
+def log_event():
+    try:
+        data = request.get_json()
+
+        new_log = Log(
+            timestamp=datetime.fromisoformat(data.get('timestamp')) if data.get('timestamp') else datetime.utcnow(),
+            event=data['event'],
+            sensor_id=data.get('sensor_id'),
+            device_id=data.get('target_device_id'),
+            owner_session_id=data.get('owner_session_id'),
+            room=data.get('room'),  # room name
+            floor_id=data.get('floor-id'),  # JSON uses 'floor-id' not 'floor_id'
+            effect=data.get('effect'),
+            user_action=bool(data.get('user_action', False))
+        )
+
+        db.session.add(new_log)
+        db.session.commit()
+
+        return jsonify({"message": "Event logged successfully"}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+    
+if __name__ == "__main__":
     app.run(debug=True)

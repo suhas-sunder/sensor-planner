@@ -1,161 +1,19 @@
-# models.py
-"""
-SQLAlchemy models for the Smart-Building simulation.
-Usage:
-    from models import db, Device, Sensor, Log
-    db.init_app(app)
-    with app.app_context():
-        db.create_all()
-"""
-
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.dialects.postgresql import JSONB, ARRAY
-from sqlalchemy.ext.hybrid import hybrid_property
-import json
 import uuid
-
-db = SQLAlchemy()
-
-
-class Device(db.Model):
-    """Virtual smart devices (lights, fans, AC, etc.)."""
-    __tablename__ = "device"
-
-    id = db.Column(db.String, primary_key=True)             # e.g. "device-123"
-    device_type = db.Column(db.String, nullable=False)             # "fan", "light_bulb", etc.
-    x = db.Column(db.Integer, nullable=False)               # current x position
-    y = db.Column(db.Integer, nullable=False)               # current y position
-    prev_x = db.Column(db.Integer, nullable=True)           # previous x position
-    prev_y = db.Column(db.Integer, nullable=True)           # previous y position
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    date_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    coverage_rad = db.Column(db.Integer, nullable=True)     # radius of effect
-    active = db.Column(db.Boolean, default=False)           # whether it's on/working
-    mounted_to = db.Column(db.String, nullable=False)       # room name or id
-    floor_id = db.Column(db.String, nullable=False)         # layout/floor id
-    state = db.Column(db.String, nullable=False)              # JSON status like {"on": true}
-
-    def __repr__(self):
-        return f"<Device {self.id} {self.device_type} mounted to {self.mounted_to}>"
-
-
-
-class Sensor(db.Model):
-    __tablename__ = "sensor"
-
-    id = db.Column(db.String, primary_key=True)
-    sensor_type = db.Column(db.String, nullable=False)
-
-    x = db.Column(db.Float, nullable=False)
-    y = db.Column(db.Float, nullable=False)
-    prev_x = db.Column("prev_x", db.Float, default=0.0)
-    prev_y = db.Column("prev_y", db.Float, default=0.0)
-
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    date_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    room_coverage_area = db.Column(db.Float, nullable=False)
-
-    # internal storage for JSON fields
-    _overlapping_sensors = db.Column("overlapping_sensors", db.JSON, default=[])
-    _connected_devices = db.Column("connected_devices", db.JSON, default=[])
-
-    sensor_rad = db.Column(db.Float, nullable=False)
-    mounted_to = db.Column(db.String, nullable=False)
-    active = db.Column(db.Boolean, default=False)
-    floor_id = db.Column(db.String, nullable=False)
-
-    # Property getter/setters with fallback for legacy/bad data
-    @property
-    def overlapping_sensors(self):
-        raw = self._overlapping_sensors
-        if isinstance(raw, str):
-            return [s.strip() for s in raw.split(',') if s.strip()]
-        return raw or []
-
-    @overlapping_sensors.setter
-    def overlapping_sensors(self, value):
-        self._overlapping_sensors = value
-
-    @property
-    def connected_devices(self):
-        raw = self._connected_devices
-        if isinstance(raw, str):
-            return [s.strip() for s in raw.split(',') if s.strip()]
-        return raw or []
-
-    @connected_devices.setter
-    def connected_devices(self, value):
-        self._connected_devices = value
-
-    def __repr__(self):
-        return f"<Sensor {self.id} in {self.mounted_to} (Active: {self.active})>"
-  
-class Log(db.Model):
-    """Event log for audits & analytics."""
-    __tablename__ = "log"
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    device_id = db.Column(
-        db.String,
-        db.ForeignKey("device.id", ondelete="SET NULL"),
-        nullable=True,
-    )
-    action = db.Column(db.String, nullable=False)   # e.g. "turned_on", "rule_trigger"
-
-    # optional reverse relationship
-    device = db.relationship("Device", backref="logs", lazy=True)
-
-    def __repr__(self) -> str:
-        return f"<Log {self.device_id} {self.action} @ {self.timestamp}>"
-# models.py
-"""
-SQLAlchemy models for the Smart-Building simulation.
-Usage:
-    from models import db, Device, Sensor, Log
-    db.init_app(app)
-    with app.app_context():
-        db.create_all()
-"""
-
-from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.dialects.postgresql import JSONB, ARRAY
-from sqlalchemy.ext.hybrid import hybrid_property
 import json
 
 db = SQLAlchemy()
 
-
-class Device(db.Model):
-    """Virtual smart devices (lights, fans, AC, etc.)."""
-    __tablename__ = "device"
-
-    id = db.Column(db.String, primary_key=True)             # e.g. "device-123"
-    device_type = db.Column(db.String, nullable=False)             # "fan", "light_bulb", etc.
-    x = db.Column(db.Integer, nullable=False)               # current x position
-    y = db.Column(db.Integer, nullable=False)               # current y position
-    prev_x = db.Column(db.Integer, nullable=True)           # previous x position
-    prev_y = db.Column(db.Integer, nullable=True)           # previous y position
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    date_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    coverage_rad = db.Column(db.Integer, nullable=True)     # radius of effect
-    active = db.Column(db.Boolean, default=False)           # whether it's on/working
-    mounted_to = db.Column(db.String, nullable=False)       # room name or id
-    floor_id = db.Column(db.String, nullable=False)         # layout/floor id
-    state = db.Column(db.String, nullable=False)              # JSON status like {"on": true}
-
-    def __repr__(self):
-        return f"<Device {self.id} {self.device_type} mounted to {self.mounted_to}>"
-
+### --- SESSION ---
 class Session(db.Model):
     __tablename__ = "session"
-    
+
     id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    layouts = db.relationship("Layout", backref="owner", cascade="all, delete-orphan", lazy=True)
 
     def to_dict(self):
         return {
@@ -163,39 +21,92 @@ class Session(db.Model):
             "name": self.name
         }
 
+### --- LAYOUT / FLOOR ---
+class Layout(db.Model):
+    __tablename__ = "layout"
 
+    id = db.Column(db.String, primary_key=True, default=lambda: f"layout-{uuid.uuid4().hex[:8]}")
+    name = db.Column(db.String, nullable=False)
+
+    owner_session_id = db.Column(
+        db.String,
+        db.ForeignKey("session.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    rooms = db.relationship("Room", backref="layout", cascade="all, delete-orphan", lazy=True)
+    devices = db.relationship("Device", backref="floor", cascade="all, delete-orphan", lazy=True)
+    sensors = db.relationship("Sensor", backref="floor", cascade="all, delete-orphan", lazy=True)
+
+### --- ROOM ---
+class Room(db.Model):
+    __tablename__ = "room"
+
+    id = db.Column(db.String, primary_key=True, default=lambda: f"room-{uuid.uuid4().hex[:6]}")
+    name = db.Column(db.String, nullable=False)
+
+    layout_id = db.Column(db.String, db.ForeignKey("layout.id", ondelete="CASCADE"), nullable=False)
+
+    x = db.Column(db.Float, nullable=False)
+    y = db.Column(db.Float, nullable=False)
+    width = db.Column(db.Float, nullable=False)
+    height = db.Column(db.Float, nullable=False)
+
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    date_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    devices = db.relationship("Device", backref="room", lazy=True)
+    sensors = db.relationship("Sensor", backref="room", lazy=True)
+
+### --- DEVICE ---
+class Device(db.Model):
+    __tablename__ = "device"
+
+    id = db.Column(db.String, primary_key=True)
+    device_type = db.Column(db.String, nullable=False)
+    x = db.Column(db.Integer, nullable=False)
+    y = db.Column(db.Integer, nullable=False)
+    prev_x = db.Column(db.Integer, nullable=True)
+    prev_y = db.Column(db.Integer, nullable=True)
+    coverage_rad = db.Column(db.Integer, nullable=True)
+    active = db.Column(db.Boolean, default=False)
+    state = db.Column(db.String, nullable=False)
+
+    mounted_to = db.Column(db.String, db.ForeignKey("room.id", ondelete="SET NULL"), nullable=True)
+    floor_id = db.Column(db.String, db.ForeignKey("layout.id", ondelete="CASCADE"), nullable=False)
+
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    date_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    logs = db.relationship("Log", backref="device", lazy=True)
+
+### --- SENSOR ---
 class Sensor(db.Model):
     __tablename__ = "sensor"
 
     id = db.Column(db.String, primary_key=True)
     sensor_type = db.Column(db.String, nullable=False)
-
     x = db.Column(db.Float, nullable=False)
     y = db.Column(db.Float, nullable=False)
-    prev_x = db.Column("prev_x", db.Float, default=0.0)
-    prev_y = db.Column("prev_y", db.Float, default=0.0)
+    prev_x = db.Column(db.Float, default=0.0)
+    prev_y = db.Column(db.Float, default=0.0)
+    sensor_rad = db.Column(db.Float, nullable=False)
+    room_coverage_area = db.Column(db.Float, nullable=False)
+    active = db.Column(db.Boolean, default=False)
+
+    mounted_to = db.Column(db.String, db.ForeignKey("room.id", ondelete="SET NULL"), nullable=True)
+    floor_id = db.Column(db.String, db.ForeignKey("layout.id", ondelete="CASCADE"), nullable=False)
 
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     date_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    room_coverage_area = db.Column(db.Float, nullable=False)
+    _overlapping_sensors = db.Column(db.JSON, default=[])
+    _connected_devices = db.Column(db.JSON, default=[])
 
-    # internal storage for JSON fields
-    _overlapping_sensors = db.Column("overlapping_sensors", db.JSON, default=[])
-    _connected_devices = db.Column("connected_devices", db.JSON, default=[])
-
-    sensor_rad = db.Column(db.Float, nullable=False)
-    mounted_to = db.Column(db.String, nullable=False)
-    active = db.Column(db.Boolean, default=False)
-    floor_id = db.Column(db.String, nullable=False)
-
-    # Property getter/setters with fallback for legacy/bad data
     @property
     def overlapping_sensors(self):
         raw = self._overlapping_sensors
-        if isinstance(raw, str):
-            return [s.strip() for s in raw.split(',') if s.strip()]
-        return raw or []
+        return [s.strip() for s in raw] if isinstance(raw, list) else []
 
     @overlapping_sensors.setter
     def overlapping_sensors(self, value):
@@ -204,9 +115,7 @@ class Sensor(db.Model):
     @property
     def connected_devices(self):
         raw = self._connected_devices
-        if isinstance(raw, str):
-            return [s.strip() for s in raw.split(',') if s.strip()]
-        return raw or []
+        return [s.strip() for s in raw] if isinstance(raw, list) else []
 
     @connected_devices.setter
     def connected_devices(self, value):
@@ -214,24 +123,24 @@ class Sensor(db.Model):
 
     def __repr__(self):
         return f"<Sensor {self.id} in {self.mounted_to} (Active: {self.active})>"
-  
+
+### --- LOG ---
 class Log(db.Model):
-    """Event log for audits & analytics."""
     __tablename__ = "log"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    device_id = db.Column(
-        db.String,
-        db.ForeignKey("device.id", ondelete="SET NULL"),
-        nullable=True,
-    )
-    action = db.Column(db.String, nullable=False)   # e.g. "turned_on", "rule_trigger"
+    event = db.Column(db.String, nullable=False)  # renamed from "action"
 
-    # optional reverse relationship
-    device = db.relationship("Device", backref="logs", lazy=True)
+    device_id = db.Column(db.String, db.ForeignKey("device.id", ondelete="SET NULL"), nullable=True)
+    sensor_id = db.Column(db.String, db.ForeignKey("sensor.id", ondelete="SET NULL"), nullable=True)
+    owner_session_id = db.Column(db.String, db.ForeignKey("session.id", ondelete="SET NULL"), nullable=True)
 
-    def __repr__(self) -> str:
-        return f"<Log {self.device_id} {self.action} @ {self.timestamp}>"
-    
+    room = db.Column(db.String, nullable=True)  # now stores room name directly, not FK
+    floor_id = db.Column(db.String, db.ForeignKey("layout.id", ondelete="SET NULL"), nullable=True)
 
+    effect = db.Column(db.String, nullable=True)
+    user_action = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return f"<Log {self.timestamp}: {self.event} (device={self.device_id})>"
