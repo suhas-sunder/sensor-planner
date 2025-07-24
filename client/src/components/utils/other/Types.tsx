@@ -59,3 +59,11 @@ export type SearchItem = {
   name: string;
   type: string; // e.g., 'motion_sensor', 'wifi_sensor', 'fan', 'fridge'
 };
+
+export type LocalStorageData = {
+  actionType: string;
+  sensors?: Sensor[];
+  devices?: Device[];
+  setSensors?: React.Dispatch<React.SetStateAction<Sensor[]>>;
+  setDevices?: React.Dispatch<React.SetStateAction<Device[]>>;
+};

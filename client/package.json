@@ -13,6 +13,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3",
+    "unique-username-generator": "^1.4.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
