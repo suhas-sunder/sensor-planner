@@ -9,6 +9,8 @@ export default function useLocalStorage({
   devices,
   setSensors,
   setDevices,
+  setSelectedNodeId,
+  selectedNodeId,
 }: LocalStorageData) {
   const hasInitialized = useRef(false); // Track if the app has been initialized
 
@@ -37,7 +39,7 @@ export default function useLocalStorage({
 
     const timer = setTimeout(() => {
       hasInitialized.current = true;
-    }, 1000);
+    }, 100);
 
     return () => {
       clearTimeout(timer);
@@ -63,6 +65,7 @@ export default function useLocalStorage({
       // Load data from localStorage
       const storedSensors = localStorage.getItem("sensorData");
       const storedDevices = localStorage.getItem("deviceData");
+      const storedSelectedNodeId = localStorage.getItem("selectedNodeId");
 
       // Parse and set data if available
       if (storedSensors && setSensors) {
@@ -81,6 +84,11 @@ export default function useLocalStorage({
           console.error("Failed to parse device data");
         }
       }
+
+      // Set selected node if available
+      if (storedSelectedNodeId && setSelectedNodeId) {
+        setSelectedNodeId(storedSelectedNodeId);
+      }
     }
 
     // Set hasInitialized to true after a short delay to ensure the initial load is complete
@@ -93,7 +101,7 @@ export default function useLocalStorage({
     return () => {
       clearTimeout(timer);
     };
-  }, [actionType, setSensors, setDevices]);
+  }, [actionType, setSensors, setDevices, setSelectedNodeId]);
 
   // Sync changes after init
   useEffect(() => {
@@ -105,14 +113,18 @@ export default function useLocalStorage({
       if (devices) {
         localStorage.setItem("deviceData", JSON.stringify(devices));
       }
+
+      if (selectedNodeId || selectedNodeId === null) {
+        localStorage.setItem("selectedNodeId", selectedNodeId || "");
+      }
     }
-  }, [actionType, sensors, devices]);
+  }, [actionType, sensors, devices, selectedNodeId]);
 
   // User ID generation
   useEffect(() => {
     if (actionType === "user-update") {
       const userId = localStorage.getItem("userId");
-      
+
       // If userId does not exist, generate a new one
       if (!userId) {
         const userName = generateUsername("-", 2, 20, "University Student");

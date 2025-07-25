@@ -5,10 +5,8 @@ import type { Device, Sensor } from "../components/utils/other/Types.js";
 import useSensorDeviceContext from "../components/hooks/useSensorDeviceContext.js";
 
 export default function Dashboard() {
-  const { sensors, devices } = useSensorDeviceContext();
+  const { sensors, devices, selectedNodeId, setSelectedNodeId } = useSensorDeviceContext();
   const [viewport, setViewport] = useState({ x: 0, y: 0 });
-
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   const handleCanvasClick = (x: number, y: number): void => {
     // Check if a sensor is clicked
