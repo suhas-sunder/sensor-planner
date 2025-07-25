@@ -5,6 +5,7 @@ import DeviceTypes from "../data/DeviceTypes";
 import type { Sensor, Device } from "../utils/other/Types";
 import DetectConnectedNodes from "../utils/computations/DetectConnectedNodes";
 import DetectInterferenceNodes from "../utils/computations/DetectInterferenceNodes";
+import NodeConnectionSummary from "../layout/NodeConnectionSummary";
 
 export default function EditNodeMenu() {
   const { sensors, devices, setSensors, setDevices, selectedNodeId } =
@@ -353,6 +354,7 @@ export default function EditNodeMenu() {
         </>
       )}
 
+      <NodeConnectionSummary node={editableNode} />
       <button
         onClick={handleDelete}
         className="mt-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded cursor-pointer"
