@@ -149,6 +149,9 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
         setSensors(updatedSensors);
         setDevices(updatedDevices);
       }
+
+      console.log("Sensors: " + JSON.stringify(sensors));
+      console.log("Devices: " + JSON.stringify(devices));
     };
 
     window.addEventListener("mouseup", handleGlobalMouseUp);
