@@ -10,7 +10,7 @@ import useCanvasSize from "../hooks/useCanvasSize.js";
 import usePulseAnimation from "../hooks/usePulseAnimation.js";
 import useSensorDeviceContext from "../hooks/useSensorDeviceContext.js";
 import DetectTouchingNodes from "../utils/computations/DetectTouchingNodes.js";
-
+import DispCursorPos from "../overlays/DispCursorPos.js";
 const CanvasArea: React.FC<CanvasAreaProps> = ({
   selectedNodeId,
   onCanvasClick,
@@ -18,6 +18,10 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   setViewport,
 }) => {
   const { sensors, setSensors, devices, setDevices } = useSensorDeviceContext();
+  const [cursorPosition, setCursorPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // Create a reference to the canvas
   const canvasSize = useCanvasSize(canvasRef);
@@ -49,7 +53,15 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   // Handle mouse down
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!canvasRef.current) return;
+
     const rect = canvasRef.current.getBoundingClientRect(); // Get the canvas rectangle
+    const screenX = e.clientX - rect.left;
+    const screenY = e.clientY - rect.top;
+    const worldX = screenX + viewport.x;
+    const worldY = screenY + viewport.y;
+
+    setCursorPosition({ x: Math.round(worldX), y: Math.round(worldY) });
+
     const mouseX = e.clientX - rect.left + viewport.x; // Get the mouse coordinates
     const mouseY = e.clientY - rect.top + viewport.y; // Get the mouse coordinates
 
@@ -83,8 +95,15 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!canvasRef.current) return; // Check if the canvas exists
 
-    const dx = e.movementX; // Get the mouse movement
-    const dy = e.movementY; // Get the mouse movement
+    const dx = e.movementX;
+    const dy = e.movementY;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const screenX = e.clientX - rect.left;
+    const screenY = e.clientY - rect.top;
+    const worldX = screenX + viewport.x;
+    const worldY = screenY + viewport.y;
+    setCursorPosition({ x: Math.round(worldX), y: Math.round(worldY) });
 
     if (draggingSensorId) {
       // If a sensor is being dragged, update its position
@@ -191,6 +210,8 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   return (
     <div className="flex relative flex-col items-center justify-center w-full h-screen bg-white overflow-hidden cursor-pointer">
       <Scale />
+      <DispCursorPos cursorPosition={cursorPosition} />
+
       <canvas
         ref={canvasRef}
         onDoubleClick={handleClick} // Select sensor on double click
