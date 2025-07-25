@@ -12,6 +12,51 @@ export default function useLocalStorage({
 }: LocalStorageData) {
   const hasInitialized = useRef(false); // Track if the app has been initialized
 
+  // Load on first app init
+  useEffect(() => {
+    if (actionType === "init" && !hasInitialized.current) {
+      const storedSensors = localStorage.getItem("sensorData");
+      const storedDevices = localStorage.getItem("deviceData");
+
+      if (storedSensors && setSensors) {
+        try {
+          setSensors(JSON.parse(storedSensors));
+        } catch {
+          console.error("Failed to parse sensor data");
+        }
+      }
+
+      if (storedDevices && setDevices) {
+        try {
+          setDevices(JSON.parse(storedDevices));
+        } catch {
+          console.error("Failed to parse device data");
+        }
+      }
+    }
+
+    const timer = setTimeout(() => {
+      hasInitialized.current = true;
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [actionType, setSensors, setDevices]);
+
+  // Sync changes after init
+  useEffect(() => {
+    if (actionType === "sync" && hasInitialized.current) {
+      if (sensors) {
+        localStorage.setItem("sensorData", JSON.stringify(sensors));
+      }
+      if (devices) {
+        localStorage.setItem("deviceData", JSON.stringify(devices));
+      }
+    }
+  }, [actionType, sensors, devices]);
+
+  // User ID generation
   useEffect(() => {
     // Only run this effect once when the app initializes
     if (actionType === "init" && !hasInitialized.current) {
