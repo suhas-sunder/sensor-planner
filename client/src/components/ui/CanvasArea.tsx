@@ -51,47 +51,6 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     }
   };
 
-  // Handle mouse down
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!canvasRef.current) return;
-
-    const rect = canvasRef.current.getBoundingClientRect(); // Get the canvas rectangle
-    const screenX = e.clientX - rect.left;
-    const screenY = e.clientY - rect.top;
-    const worldX = screenX + viewport.x;
-    const worldY = screenY + viewport.y;
-
-    setCursorPosition({ x: Math.round(worldX), y: Math.round(worldY) });
-
-    const mouseX = e.clientX - rect.left + viewport.x; // Get the mouse coordinates
-    const mouseY = e.clientY - rect.top + viewport.y; // Get the mouse coordinates
-
-    // Find the sensor that was clicked.
-    // Math.hypot is the Pythagorean theorem for distance calculation to find the closest target from the mouse
-    const targetSensor = sensors.find(
-      (s: Sensor) =>
-        Math.hypot(s.x - mouseX, s.y - mouseY) <=
-        (s.sensor_rad || defaultSensorRadius)
-    );
-
-    // Find the device that was clicked
-    const targetDevice = devices.find(
-      (d: Device) =>
-        Math.hypot(d.x - mouseX, d.y - mouseY) <=
-        (d.device_rad || defaultSensorRadius)
-    );
-
-    // Decide which was clicked — prioritize sensor if both overlap
-    if (targetSensor) {
-      setDraggingSensorId(targetSensor.id); // Set the sensor to be dragged
-    } else if (targetDevice) {
-      setDraggingDeviceId(targetDevice.id); // Set the device to be dragged
-    } else {
-      setIsPanning(true); // Start panning
-      setLastPan({ x: e.clientX, y: e.clientY }); // Set the last mouse position
-    }
-  };
-
   // Handle mouse move
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!canvasRef.current) return; // Check if the canvas exists
@@ -133,7 +92,114 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     }
   };
 
+  // Handle mouse down
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!canvasRef.current) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const screenX = e.clientX - rect.left;
+    const screenY = e.clientY - rect.top;
+    const worldX = screenX + viewport.x;
+    const worldY = screenY + viewport.y;
+
+    setCursorPosition({ x: Math.round(worldX), y: Math.round(worldY) });
+
+    const mouseX = worldX;
+    const mouseY = worldY;
+
+    const targetSensor = sensors.find(
+      (sensor) =>
+        Math.hypot(sensor.x - mouseX, sensor.y - mouseY) <=
+        (sensor.sensor_rad || defaultSensorRadius)
+    );
+
+    const targetDevice = devices.find(
+      (device) =>
+        Math.hypot(device.x - mouseX, device.y - mouseY) <=
+        (device.device_rad || defaultSensorRadius)
+    );
+
+    if (targetSensor) {
+      setSensors((prev) =>
+        prev.map((sensor) => {
+          if (sensor.id === targetSensor.id) {
+            return {
+              ...sensor,
+              connectedDeviceIds: [],
+              interferenceIds: [],
+            };
+          }
+          return sensor;
+        })
+      );
+      setDevices((prev) =>
+        prev.map((device) => {
+          if (
+            targetSensor.connectedDeviceIds?.includes(device.id) ||
+            targetSensor.interferenceIds?.includes(device.id)
+          ) {
+            return {
+              ...device,
+              connectedSensorIds: device.connectedSensorIds?.filter(
+                (id) => id !== targetSensor.id
+              ),
+              interferenceIds: device.interferenceIds?.filter(
+                (id) => id !== targetSensor.id
+              ),
+            };
+          }
+          return device;
+        })
+      );
+      setDraggingSensorId(targetSensor.id);
+    } else if (targetDevice) {
+      setDevices((prev) =>
+        prev.map((device) => {
+          if (device.id === targetDevice.id) {
+            return {
+              ...device,
+              connectedSensorIds: [],
+              interferenceIds: [],
+            };
+          }
+          return device;
+        })
+      );
+      setSensors((prev) =>
+        prev.map((sensor) => {
+          if (
+            targetDevice.connectedSensorIds?.includes(sensor.id) ||
+            targetDevice.interferenceIds?.includes(sensor.id)
+          ) {
+            return {
+              ...sensor,
+              connectedDeviceIds: sensor.connectedDeviceIds?.filter(
+                (id) => id !== targetDevice.id
+              ),
+              interferenceIds: sensor.interferenceIds?.filter(
+                (id) => id !== targetDevice.id
+              ),
+            };
+          }
+          return sensor;
+        })
+      );
+      setDraggingDeviceId(targetDevice.id);
+    } else {
+      setIsPanning(true);
+      setLastPan({ x: e.clientX, y: e.clientY });
+    }
+  };
+
   // Handle mouse up
+  // Add at the top
+  const sensorsRef = useRef(sensors);
+  const devicesRef = useRef(devices);
+  useEffect(() => {
+    sensorsRef.current = sensors;
+    devicesRef.current = devices;
+  }, [sensors, devices]);
+
   useEffect(() => {
     const handleGlobalMouseUp = () => {
       setIsPanning(false);
@@ -141,39 +207,28 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       setDraggingSensorId(null);
       setLastPan(null);
 
-      // Only recalculate if something was being dragged
       if (draggingDeviceId || draggingSensorId) {
-        // Step 1: Calculate connected nodes based on sensor and device positions and overlapping protocols
         const { updatedSensors, updatedDevices } = DetectConnectedNodes(
-          sensors,
-          devices
+          sensorsRef.current,
+          devicesRef.current
         );
 
-        // Step 2: Calculate interference between sensors and devices based on overlapping protocols
         const {
           updatedSensors: sensorsWithInterference,
           updatedDevices: devicesWithInterference,
         } = DetectInterferenceNodes(updatedSensors, updatedDevices);
 
-        // Step 3: Update the state for sensors and devices
         setSensors(sensorsWithInterference);
         setDevices(devicesWithInterference);
       }
 
-      console.log("Sensors: " + JSON.stringify(sensors));
-      console.log("Devices: " + JSON.stringify(devices));
+      console.log("Sensors: " + JSON.stringify(sensorsRef.current));
+      console.log("Devices: " + JSON.stringify(devicesRef.current));
     };
 
     window.addEventListener("mouseup", handleGlobalMouseUp);
     return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
-  }, [
-    sensors,
-    devices,
-    draggingDeviceId,
-    draggingSensorId,
-    setDevices,
-    setSensors,
-  ]);
+  }, [draggingDeviceId, draggingSensorId, setDevices, setSensors]);
 
   // Re-draw the canvas whenever sensors, selection, viewport, size, or pulse phase changes
   useEffect(() => {

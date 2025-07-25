@@ -1,6 +1,5 @@
 import type { Sensor } from "../other/Types";
 
-// Function to draw a Sensor on the canvas
 export default function DrawSensor(
   ctx: CanvasRenderingContext2D,
   Sensor: Sensor,
@@ -16,12 +15,29 @@ export default function DrawSensor(
   const phaseOffset = 0.5;
   const phaseWrap = 1;
 
-  const pulseColor = "rgba(0, 123, 255, 0.2)";
-  const fillColor = "rgba(0, 123, 255, 0.15)";
-  const selectedColor = "#ff0000ff";
-  const innerColor = "#333";
   const fontSettings = "10px Arial";
   const fontColor = "#000";
+  const selectedColor = "#4338ca";
+  const idleCenterDotColor = "#0f172a"; // always this unless selected
+
+  // Determine connection/interference status
+  const hasInterference =
+    Array.isArray(Sensor.interferenceIds) && Sensor.interferenceIds.length > 0;
+  const isConnected =
+    Array.isArray(Sensor.connectedDeviceIds) &&
+    Sensor.connectedDeviceIds.length > 0;
+
+  // Outer area fill and ring color logic
+  let pulseColor = "rgba(0, 123, 255, 0.2)";
+  let fillColor = "rgba(0, 123, 255, 0.15)"; // default blue
+
+  if (hasInterference) {
+    pulseColor = "rgba(185, 28, 28, 0.2)"; // red
+    fillColor = "rgba(185, 28, 28, 0.15)";
+  } else if (isConnected) {
+    pulseColor = "rgba(14, 165, 233, 0.2)"; // blue
+    fillColor = "rgba(14, 165, 233, 0.15)";
+  }
 
   const maxRadius = Math.max(minRadius, Sensor.sensor_rad || 30);
   const animatedRadius = Math.max(minRadius, pulsePhase * maxRadius);
@@ -52,9 +68,9 @@ export default function DrawSensor(
   ctx.fill();
   ctx.closePath();
 
-  // Main circle
+  // Main center dot (only changes on selection)
   ctx.beginPath();
-  ctx.fillStyle = isSelected ? selectedColor : innerColor;
+  ctx.fillStyle = isSelected ? selectedColor : idleCenterDotColor;
   ctx.arc(screenX, screenY, sensorCenterDotRad, 0, 2 * Math.PI);
   ctx.fill();
   ctx.closePath();

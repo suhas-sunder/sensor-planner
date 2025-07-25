@@ -1,72 +1,61 @@
 import type { Device, Sensor } from "../other/Types";
 
-/**
- * Detects physical and wireless connectivity between sensors and devices.
- * A connection exists if the two are within combined coverage radius AND share at least one connectivity type.
- * Returns updated sensors and devices with `connectedDeviceIds` and `connectedSensorIds`.
- */
 export default function DetectConnectedNodes(
   sensors: Sensor[],
   devices: Device[]
 ): { updatedSensors: Sensor[]; updatedDevices: Device[] } {
-  const defaultRadius = 30;
+  const defaultSensorRadius = 150;
+  const defaultDeviceRadius = 30;
 
   const updatedSensors: Sensor[] = sensors.map((sensor) => {
     const connectedDeviceIds: string[] = [];
 
-    devices.forEach((device) => {
+    for (const device of devices) {
       const dx = sensor.x - device.x;
       const dy = sensor.y - device.y;
       const distance = Math.hypot(dx, dy);
+      const inRange =
+        distance <=
+        (sensor.sensor_rad ?? defaultSensorRadius) +
+          (device.device_rad ?? defaultDeviceRadius);
 
-      const sensorRadius = sensor.sensor_rad ?? defaultRadius;
-      const deviceRadius = device.device_rad ?? defaultRadius;
-
-      const withinRange = distance <= sensorRadius + deviceRadius;
-      const sharesConnectivity = sensor.connectivity.some((conn) =>
-        device.connectivity.includes(conn)
+      const sharedProtocol = sensor.connectivity.some((p) =>
+        device.connectivity.includes(p)
       );
+      const typeMatch = device.compatibleSensors.includes(sensor.type);
 
-      if (withinRange && sharesConnectivity) {
+      if (inRange && sharedProtocol && typeMatch) {
         connectedDeviceIds.push(device.id);
       }
-    });
+    }
 
-    return {
-      ...sensor,
-      connectedDeviceIds,
-    };
+    return { ...sensor, connectedDeviceIds };
   });
 
   const updatedDevices: Device[] = devices.map((device) => {
     const connectedSensorIds: string[] = [];
 
-    sensors.forEach((sensor) => {
+    for (const sensor of sensors) {
       const dx = sensor.x - device.x;
       const dy = sensor.y - device.y;
       const distance = Math.hypot(dx, dy);
+      const inRange =
+        distance <=
+        (sensor.sensor_rad ?? defaultSensorRadius) +
+          (device.device_rad ?? defaultDeviceRadius);
 
-      const sensorRadius = sensor.sensor_rad ?? defaultRadius;
-      const deviceRadius = device.device_rad ?? defaultRadius;
-
-      const withinRange = distance <= sensorRadius + deviceRadius;
-      const sharesConnectivity = sensor.connectivity.some((conn) =>
-        device.connectivity.includes(conn)
+      const sharedProtocol = sensor.connectivity.some((p) =>
+        device.connectivity.includes(p)
       );
+      const typeMatch = device.compatibleSensors.includes(sensor.type);
 
-      if (withinRange && sharesConnectivity) {
+      if (inRange && sharedProtocol && typeMatch) {
         connectedSensorIds.push(sensor.id);
       }
-    });
+    }
 
-    return {
-      ...device,
-      connectedSensorIds,
-    };
+    return { ...device, connectedSensorIds };
   });
 
-  return {
-    updatedSensors,
-    updatedDevices,
-  };
+  return { updatedSensors, updatedDevices };
 }
