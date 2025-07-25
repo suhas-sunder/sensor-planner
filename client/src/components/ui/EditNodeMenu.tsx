@@ -3,6 +3,8 @@ import useSensorDeviceContext from "../hooks/useSensorDeviceContext";
 import SensorTypes from "../data/SensorTypes";
 import DeviceTypes from "../data/DeviceTypes";
 import type { Sensor, Device } from "../utils/other/Types";
+import DetectConnectedNodes from "../utils/computations/DetectConnectedNodes";
+import DetectInterferenceNodes from "../utils/computations/DetectInterferenceNodes";
 
 export default function EditNodeMenu() {
   const { sensors, devices, setSensors, setDevices, selectedNodeId } =
@@ -46,22 +48,41 @@ export default function EditNodeMenu() {
   useEffect(() => {
     if (!pendingUpdate) return;
 
+    // Apply the update
     if ("sensor_rad" in pendingUpdate) {
-      setSensors((prev) =>
-        prev.map((sensor) =>
-          sensor.id === pendingUpdate.id ? pendingUpdate : sensor
-        )
+      const updatedSensors = sensors.map((s) =>
+        s.id === pendingUpdate.id ? pendingUpdate : s
       );
+
+      const {
+        updatedSensors: sensorsWithConnections,
+        updatedDevices: devicesWithConnections,
+      } = DetectConnectedNodes(updatedSensors, devices);
+
+      const { updatedSensors: finalSensors, updatedDevices: finalDevices } =
+        DetectInterferenceNodes(sensorsWithConnections, devicesWithConnections);
+
+      setSensors(finalSensors);
+      setDevices(finalDevices);
     } else {
-      setDevices((prev) =>
-        prev.map((device) =>
-          device.id === pendingUpdate.id ? pendingUpdate : device
-        )
+      const updatedDevices = devices.map((d) =>
+        d.id === pendingUpdate.id ? pendingUpdate : d
       );
+
+      const {
+        updatedSensors: sensorsWithConnections,
+        updatedDevices: devicesWithConnections,
+      } = DetectConnectedNodes(sensors, updatedDevices);
+
+      const { updatedSensors: finalSensors, updatedDevices: finalDevices } =
+        DetectInterferenceNodes(sensorsWithConnections, devicesWithConnections);
+
+      setSensors(finalSensors);
+      setDevices(finalDevices);
     }
 
     setPendingUpdate(null);
-  }, [pendingUpdate, setSensors, setDevices]);
+  }, [pendingUpdate]);
 
   const availableConnectivityOptions = useMemo(() => {
     if (!editableNode) return [];

@@ -28,6 +28,10 @@ export default function AddDeviceModal({
 
     const formData = new FormData(e.currentTarget);
 
+    const deviceDefaults = DeviceTypes().find(
+      (device) => device.label === formData.get("device_type")
+    );
+
     const submittedData: Device = {
       id: `${formData.get("device_category")}-${uuidv4()}`,
       type: String(formData.get("device_category")),
@@ -37,8 +41,8 @@ export default function AddDeviceModal({
       y: Number(formData.get("y_position")),
       connectivity: [String(formData.get("connectivity_type") ?? "")],
       device_rad: Number(formData.get("device_radius")),
-      compatibleSensors: [],
-      interferenceProtocols: [],
+      compatibleSensors: deviceDefaults?.compatibleSensors ?? [],
+      interferenceProtocols: deviceDefaults?.interferenceProtocols ?? [],
     };
 
     setDevices((prev: Device[]) => [...prev, submittedData]);

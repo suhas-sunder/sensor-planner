@@ -2,43 +2,73 @@ import type { Device } from "../other/Types";
 
 export default function DrawDevice(
   ctx: CanvasRenderingContext2D,
-  Device: Device,
+  device: Device,
   isSelected: boolean,
   viewport: { x: number; y: number },
   pulsePhase: number
 ): void {
-  const screenX = Device.x - viewport.x;
-  const screenY = Device.y - viewport.y;
+  const screenX = device.x - viewport.x;
+  const screenY = device.y - viewport.y;
   const screenFillYOffset = 25;
 
-  const baseRadius = Device.device_rad || 30;
+  const baseRadius = device.device_rad || 30;
   const sideLength = Math.max(10, baseRadius * 2);
-
   const innerSize = 10;
-  const innerColor = "#053b01ff"; // dark green
-  const selectedColor = "#ff0000ff";
 
   const fontSettings = "10px Arial";
   const fontColor = "#000";
 
-  // Green pulse range (visible effect)
-  const greenStart = [80, 200, 30]; // medium green
-  const greenEnd = [140, 255, 90]; // light green
+  const innerColor = "#0f172a";
+  const selectedColor = "#4338ca";
 
-  // Use pulsePhase directly for smooth bounce
-  const interp = pulsePhase;
+  // Color ranges
+  const greenStart = [80, 200, 30];
+  const greenEnd = [140, 255, 90];
 
-  const r = Math.floor(greenStart[0] + (greenEnd[0] - greenStart[0]) * interp);
-  const g = Math.floor(greenStart[1] + (greenEnd[1] - greenStart[1]) * interp);
-  const b = Math.floor(greenStart[2] + (greenEnd[2] - greenStart[2]) * interp);
-  const alpha = 0.25 + 0.1 * Math.sin(pulsePhase * 20 * Math.PI); // subtle oscillation in opacity
+  const redStart = [200, 50, 50];
+  const redEnd = [255, 100, 100];
 
-  const pulseColor = `rgba(${r}, ${g}, ${b}, ${alpha.toFixed(2)})`;
+  const alphaMin = 0.25;
+  const alphaAmplitude = 0.1;
+  const alphaOscillationSpeed = 20 * Math.PI;
 
-  // Outer rounded square (visible pulse)
+  const hasInterference =
+    Array.isArray(device.interferenceIds) && device.interferenceIds.length > 0;
+  const isConnected =
+    Array.isArray(device.connectedSensorIds) &&
+    device.connectedSensorIds.length > 0;
+
+  let pulseColor = "rgba(0,0,0,0.05)";
+
+  if (hasInterference) {
+    const interp = pulsePhase;
+    const [r, g, b] = [
+      Math.floor(redStart[0] + (redEnd[0] - redStart[0]) * interp),
+      Math.floor(redStart[1] + (redEnd[1] - redStart[1]) * interp),
+      Math.floor(redStart[2] + (redEnd[2] - redStart[2]) * interp),
+    ];
+    const alpha =
+      alphaMin + alphaAmplitude * Math.sin(pulsePhase * alphaOscillationSpeed);
+    pulseColor = `rgba(${r}, ${g}, ${b}, ${alpha.toFixed(2)})`;
+  } else if (isConnected) {
+    pulseColor = "rgba(14, 165, 233, 0.15)"; // blue
+  } else {
+    // Default green pulse
+    const interp = pulsePhase;
+    const [r, g, b] = [
+      Math.floor(greenStart[0] + (greenEnd[0] - greenStart[0]) * interp),
+      Math.floor(greenStart[1] + (greenEnd[1] - greenStart[1]) * interp),
+      Math.floor(greenStart[2] + (greenEnd[2] - greenStart[2]) * interp),
+    ];
+    const alpha =
+      alphaMin + alphaAmplitude * Math.sin(pulsePhase * alphaOscillationSpeed);
+    pulseColor = `rgba(${r}, ${g}, ${b}, ${alpha.toFixed(2)})`;
+  }
+
+  // Outer pulse
   ctx.beginPath();
   ctx.fillStyle = pulseColor;
-  drawRoundedSquare(ctx, screenX, screenY, sideLength, 4); // smaller corner radius
+  drawRoundedSquare(ctx, screenX, screenY, sideLength, 4);
   ctx.fill();
   ctx.closePath();
 
@@ -47,13 +77,12 @@ export default function DrawDevice(
   ctx.fillStyle = isSelected ? selectedColor : innerColor;
   drawRoundedSquare(ctx, screenX, screenY, innerSize, 2);
   ctx.fill();
-  ctx.lineWidth = 1;
   ctx.closePath();
 
   // Label
   ctx.font = fontSettings;
   ctx.fillStyle = fontColor;
-  const text = Device.name;
+  const text = device.name;
   const textWidth = ctx.measureText(text).width;
   ctx.fillText(text, screenX - textWidth / 2, screenY + screenFillYOffset);
 }

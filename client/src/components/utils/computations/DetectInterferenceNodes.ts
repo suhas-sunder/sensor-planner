@@ -1,62 +1,49 @@
-import type { Device, Sensor } from "../other/Types";
+import type { Sensor, Device } from "../other/Types";
 
-/**
- * Detects interference between sensors and devices.
- * - Interference requires:
- *   (1) shared connectivity,
- *   (2) the protocol is listed as interference-prone,
- *   (3) the sensor is NOT in the device's compatibleSensors list.
- */
 export default function DetectInterferenceNodes(
   sensors: Sensor[],
   devices: Device[]
-) {
-  const updatedSensors = sensors.map((sensor) => {
-    const interferingDevices = devices.filter((device) => {
-      const sharedConnectivities = sensor.connectivity.filter((conn) =>
-        device.connectivity.includes(conn)
+): { updatedSensors: Sensor[]; updatedDevices: Device[] } {
+  const defaultSensorRadius = 150;
+  const defaultDeviceRadius = 30;
+
+  const sensorMap: { [id: string]: Sensor } = {};
+  const deviceMap: { [id: string]: Device } = {};
+
+  for (const s of sensors) {
+    sensorMap[s.id] = { ...s, interferenceIds: [] };
+  }
+
+  for (const d of devices) {
+    deviceMap[d.id] = { ...d, interferenceIds: [] };
+  }
+
+  for (const s of sensors) {
+    for (const d of devices) {
+      const dx = s.x - d.x;
+      const dy = s.y - d.y;
+      const distance = Math.hypot(dx, dy);
+      const sensorRadius = s.sensor_rad ?? defaultSensorRadius;
+      const deviceRadius = d.device_rad ?? defaultDeviceRadius;
+      const withinRange = distance <= sensorRadius + deviceRadius;
+
+      const sharedInterference = s.connectivity.some((p) =>
+        d.interferenceProtocols.includes(p)
       );
 
-      if (sharedConnectivities.length === 0) return false;
+      const alreadyConnected =
+        s.connectedDeviceIds?.includes(d.id) ||
+        d.connectedSensorIds?.includes(s.id);
 
-      const causesInterference =
-        sharedConnectivities.some((conn) =>
-          device.interferenceProtocols.includes(conn)
-        ) && !device.compatibleSensors.includes(sensor.type);
-
-      return causesInterference;
-    });
-
-    return {
-      ...sensor,
-      interferenceIds: interferingDevices.map((d) => d.id),
-    };
-  });
-
-  const updatedDevices = devices.map((device) => {
-    const interferingSensors = sensors.filter((sensor) => {
-      const sharedConnectivities = sensor.connectivity.filter((conn) =>
-        device.connectivity.includes(conn)
-      );
-
-      if (sharedConnectivities.length === 0) return false;
-
-      const causesInterference =
-        sharedConnectivities.some((conn) =>
-          device.interferenceProtocols.includes(conn)
-        ) && !device.compatibleSensors.includes(sensor.type);
-
-      return causesInterference;
-    });
-
-    return {
-      ...device,
-      interferenceIds: interferingSensors.map((s) => s.id),
-    };
-  });
+      if (withinRange && sharedInterference && !alreadyConnected) {
+        sensorMap[s.id].interferenceIds!.push(d.id);
+        deviceMap[d.id].interferenceIds!.push(s.id);
+      }
+    }
+  }
 
   return {
-    updatedSensors,
-    updatedDevices,
+    updatedSensors: Object.values(sensorMap),
+    updatedDevices: Object.values(deviceMap),
   };
 }
