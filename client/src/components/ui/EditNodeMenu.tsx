@@ -18,12 +18,15 @@ export default function EditNodeMenu() {
   const [editableNode, setEditableNode] = useState<Sensor | Device | null>(
     null
   );
-
   const [selectedSensorType, setSelectedSensorType] = useState("");
   const [selectedDeviceCategory, setSelectedDeviceCategory] = useState("");
   const [selectedDeviceLabel, setSelectedDeviceLabel] = useState("");
 
-  // Populate editable node + kind selectors
+  // Store pending update for context synchronization
+  const [pendingUpdate, setPendingUpdate] = useState<Sensor | Device | null>(
+    null
+  );
+
   useEffect(() => {
     if (!node) {
       setEditableNode(null);
@@ -39,6 +42,26 @@ export default function EditNodeMenu() {
       setSelectedDeviceLabel(node.label);
     }
   }, [node]);
+
+  useEffect(() => {
+    if (!pendingUpdate) return;
+
+    if ("sensor_rad" in pendingUpdate) {
+      setSensors((prev) =>
+        prev.map((sensor) =>
+          sensor.id === pendingUpdate.id ? pendingUpdate : sensor
+        )
+      );
+    } else {
+      setDevices((prev) =>
+        prev.map((device) =>
+          device.id === pendingUpdate.id ? pendingUpdate : device
+        )
+      );
+    }
+
+    setPendingUpdate(null);
+  }, [pendingUpdate, setSensors, setDevices]);
 
   const availableConnectivityOptions = useMemo(() => {
     if (!editableNode) return [];
@@ -76,7 +99,12 @@ export default function EditNodeMenu() {
     key: K,
     value: (Sensor & Device)[K]
   ) => {
-    setEditableNode((prev) => (prev ? { ...prev, [key]: value } : prev));
+    setEditableNode((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, [key]: value };
+      setPendingUpdate(updated);
+      return updated;
+    });
   };
 
   const handleSensorTypeChange = (newType: string) => {
@@ -85,15 +113,16 @@ export default function EditNodeMenu() {
       sensorTypes.find((sensor) => sensor.type === newType)?.connectivity[0] ||
       "";
 
-    setEditableNode((prev) =>
-      prev && "sensor_rad" in prev
-        ? {
-            ...prev,
-            type: newType,
-            connectivity: [newConnectivity],
-          }
-        : prev
-    );
+    setEditableNode((prev) => {
+      if (!prev || !("sensor_rad" in prev)) return prev;
+      const updated = {
+        ...prev,
+        type: newType,
+        connectivity: [newConnectivity],
+      };
+      setPendingUpdate(updated);
+      return updated;
+    });
   };
 
   const handleDeviceCategoryChange = (category: string) => {
@@ -109,16 +138,17 @@ export default function EditNodeMenu() {
         (device) => device.type === category && device.label === firstLabel
       )?.connectivity[0] || "";
 
-    setEditableNode((prev) =>
-      prev && "device_rad" in prev
-        ? {
-            ...prev,
-            type: category,
-            label: firstLabel,
-            connectivity: [newConnectivity],
-          }
-        : prev
-    );
+    setEditableNode((prev) => {
+      if (!prev || !("device_rad" in prev)) return prev;
+      const updated = {
+        ...prev,
+        type: category,
+        label: firstLabel,
+        connectivity: [newConnectivity],
+      };
+      setPendingUpdate(updated);
+      return updated;
+    });
   };
 
   const handleDeviceLabelChange = (label: string) => {
@@ -130,33 +160,16 @@ export default function EditNodeMenu() {
           device.type === selectedDeviceCategory && device.label === label
       )?.connectivity[0] || "";
 
-    setEditableNode((prev) =>
-      prev && "device_rad" in prev
-        ? {
-            ...prev,
-            label,
-            connectivity: [newConnectivity],
-          }
-        : prev
-    );
-  };
-
-  const handleSave = () => {
-    if (!editableNode) return;
-
-    if ("sensor_rad" in editableNode) {
-      setSensors((prev) =>
-        prev.map((sensor) =>
-          sensor.id === editableNode.id ? (editableNode as Sensor) : sensor
-        )
-      );
-    } else {
-      setDevices((prev) =>
-        prev.map((device) =>
-          device.id === editableNode.id ? (editableNode as Device) : device
-        )
-      );
-    }
+    setEditableNode((prev) => {
+      if (!prev || !("device_rad" in prev)) return prev;
+      const updated = {
+        ...prev,
+        label,
+        connectivity: [newConnectivity],
+      };
+      setPendingUpdate(updated);
+      return updated;
+    });
   };
 
   const handleDelete = () => {
@@ -318,13 +331,6 @@ export default function EditNodeMenu() {
           </div>
         </>
       )}
-
-      <button
-        onClick={handleSave}
-        className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded cursor-pointer"
-      >
-        Save Changes
-      </button>
 
       <button
         onClick={handleDelete}

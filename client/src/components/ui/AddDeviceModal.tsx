@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import DeviceTypes from "../data/DeviceTypes";
 import { useSensorDeviceContext } from "../hooks/useSensorDeviceContext.ts";
@@ -10,20 +10,16 @@ export default function AddDeviceModal({
   setShowDeviceModal: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { setDevices } = useSensorDeviceContext();
-  const [selectedDeviceType, setSelectedDeviceType] = useState("motion");
-  const [selectedDeviceCategory, setSelectedDeviceCategory] =
-    useState("appliance");
-  const [deviceName, setDeviceName] = useState(
-    `Motion Device - ${uuidv4().slice(0, 8)}`
-  );
-  const [selectedConnectivityType, setSelectedConnectivityType] =
-    useState("asdf");
+  const [selectedDeviceType, setSelectedDeviceType] = useState("");
+  const [selectedDeviceCategory, setSelectedDeviceCategory] = useState("");
+  const [deviceName, setDeviceName] = useState("");
+  const [selectedConnectivityType, setSelectedConnectivityType] = useState("");
   const [radius, setRadius] = useState(30);
   const [xPosition, setXPosition] = useState(100);
   const [yPosition, setYPosition] = useState(100);
 
   const selectedDevice = DeviceTypes().find(
-    (d) => d.label === selectedDeviceType
+    (device) => device.label === selectedDeviceType
   );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -39,7 +35,7 @@ export default function AddDeviceModal({
       name: String(formData.get("device_name")),
       x: Number(formData.get("x_position")),
       y: Number(formData.get("y_position")),
-      connectivity: [String(formData.get("connectivity_type"))],
+      connectivity: [String(formData.get("connectivity_type") ?? "")],
       device_rad: Number(formData.get("device_radius")),
       compatibleSensors: [],
       interferenceProtocols: [],
@@ -47,6 +43,23 @@ export default function AddDeviceModal({
 
     setDevices((prev: Device[]) => [...prev, submittedData]);
   };
+
+  useEffect(() => {
+    const allDevices = DeviceTypes();
+    if (allDevices.length === 0) return;
+
+    const firstDevice = allDevices[0];
+
+    setSelectedDeviceCategory(firstDevice.type);
+    setSelectedDeviceType(firstDevice.label);
+    setDeviceName(`${firstDevice.label} - ${uuidv4().slice(0, 8)}`);
+
+    if (firstDevice.connectivity.length > 0) {
+      setSelectedConnectivityType(firstDevice.connectivity[0]);
+    } else {
+      setSelectedConnectivityType("");
+    }
+  }, []);
 
   return (
     <>
