@@ -21,15 +21,12 @@ export default function DrawDevice(
   const innerColor = "#0f172a";
   const selectedColor = "#4338ca";
 
-  // Color ranges for different states
+  // Color ranges
   const greenStart = [80, 200, 30];
   const greenEnd = [140, 255, 90];
 
   const redStart = [200, 50, 50];
   const redEnd = [255, 100, 100];
-
-  const blueStart = [50, 100, 200];
-  const blueEnd = [100, 150, 255];
 
   const alphaMin = 0.25;
   const alphaAmplitude = 0.1;
@@ -41,30 +38,32 @@ export default function DrawDevice(
     Array.isArray(device.connectedSensorIds) &&
     device.connectedSensorIds.length > 0;
 
-  // Determine color state
-  let colorStart = greenStart;
-  let colorEnd = greenEnd;
+  let pulseColor = "rgba(0,0,0,0.05)";
 
   if (hasInterference) {
-    colorStart = redStart;
-    colorEnd = redEnd;
+    const interp = pulsePhase;
+    const [r, g, b] = [
+      Math.floor(redStart[0] + (redEnd[0] - redStart[0]) * interp),
+      Math.floor(redStart[1] + (redEnd[1] - redStart[1]) * interp),
+      Math.floor(redStart[2] + (redEnd[2] - redStart[2]) * interp),
+    ];
+    const alpha =
+      alphaMin + alphaAmplitude * Math.sin(pulsePhase * alphaOscillationSpeed);
+    pulseColor = `rgba(${r}, ${g}, ${b}, ${alpha.toFixed(2)})`;
   } else if (isConnected) {
-    colorStart = blueStart;
-    colorEnd = blueEnd;
+    pulseColor = "rgba(14, 165, 233, 0.15)"; // blue
+  } else {
+    // Default green pulse
+    const interp = pulsePhase;
+    const [r, g, b] = [
+      Math.floor(greenStart[0] + (greenEnd[0] - greenStart[0]) * interp),
+      Math.floor(greenStart[1] + (greenEnd[1] - greenStart[1]) * interp),
+      Math.floor(greenStart[2] + (greenEnd[2] - greenStart[2]) * interp),
+    ];
+    const alpha =
+      alphaMin + alphaAmplitude * Math.sin(pulsePhase * alphaOscillationSpeed);
+    pulseColor = `rgba(${r}, ${g}, ${b}, ${alpha.toFixed(2)})`;
   }
-
-  const interp = pulsePhase;
-
-  const [r, g, b] = [
-    Math.floor(colorStart[0] + (colorEnd[0] - colorStart[0]) * interp),
-    Math.floor(colorStart[1] + (colorEnd[1] - colorStart[1]) * interp),
-    Math.floor(colorStart[2] + (colorEnd[2] - colorStart[2]) * interp),
-  ];
-
-  const alpha =
-    alphaMin + alphaAmplitude * Math.sin(pulsePhase * alphaOscillationSpeed);
-
-  const pulseColor = `rgba(${r}, ${g}, ${b}, ${alpha.toFixed(2)})`;
 
   // Outer pulse
   ctx.beginPath();

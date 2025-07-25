@@ -11,7 +11,7 @@ export default function DeviceTypes() {
         "Thread",
       ],
       compatibleSensors: ["temperature", "humidity", "occupancy", "motion"],
-      interferenceProtocols: ["Wi-Fi 2.4GHz", "Wi-Fi 5GHz"], // Zigbee+Thread excluded
+      interferenceProtocols: ["Wi-Fi 2.4GHz", "Wi-Fi 5GHz"], // Zigbee & Thread excluded
     },
     {
       type: "appliance",
