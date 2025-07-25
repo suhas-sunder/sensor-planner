@@ -4,7 +4,7 @@ import SensorTypes from "../data/SensorTypes";
 import DeviceTypes from "../data/DeviceTypes";
 import type { Sensor, Device } from "../utils/other/Types";
 
-export default function NodeController() {
+export default function EditNodeMenu() {
   const { sensors, devices, setSensors, setDevices, selectedNodeId } =
     useSensorDeviceContext();
 
@@ -159,6 +159,20 @@ export default function NodeController() {
     }
   };
 
+  const handleDelete = () => {
+    if (!editableNode) return;
+
+    if ("sensor_rad" in editableNode) {
+      setSensors((prev) =>
+        prev.filter((sensor) => sensor.id !== editableNode.id)
+      );
+    } else {
+      setDevices((prev) =>
+        prev.filter((device) => device.id !== editableNode.id)
+      );
+    }
+  };
+
   if (!node || !editableNode) {
     return (
       <div className="flex flex-col bg-slate-700 gap-3 rounded-md p-4 text-white">
@@ -307,9 +321,16 @@ export default function NodeController() {
 
       <button
         onClick={handleSave}
-        className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+        className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded cursor-pointer"
       >
         Save Changes
+      </button>
+
+      <button
+        onClick={handleDelete}
+        className="mt-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded cursor-pointer"
+      >
+        Delete Node
       </button>
     </div>
   );

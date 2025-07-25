@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import SensorTypes from "../data/SensorTypes";
-import type { Sensor } from "../utils/other/Types";
 import useSensorDeviceContext from "../hooks/useSensorDeviceContext";
+import type { Sensor } from "../utils/other/Types";
 
 export default function AddSensorModal({
   setShowSensorModal,
@@ -20,10 +20,6 @@ export default function AddSensorModal({
   const [radius, setRadius] = useState("30");
   const [xPosition, setXPosition] = useState("100");
   const [yPosition, setYPosition] = useState("100");
-
-  const sensorTypes = useMemo(() => {
-    return SensorTypes();
-  }, []);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,6 +49,7 @@ export default function AddSensorModal({
         className="fixed inset-0 z-50 flex items-center justify-center"
       >
         <button
+          type="button"
           onClick={() => setShowSensorModal(false)}
           className="absolute inset-0 bg-slate-900 opacity-10 pointer-events-auto cursor-pointer"
         />
@@ -71,7 +68,7 @@ export default function AddSensorModal({
               name="sensor_type"
               value={selectedSensorType}
               onChange={(e) => {
-                const selected = sensorTypes.find(
+                const selected = SensorTypes().find(
                   (sensor) => sensor.type === e.target.value
                 );
                 if (selected) {
@@ -81,7 +78,7 @@ export default function AddSensorModal({
               }}
               className="flex border-2 border-slate-500 w-full p-2 rounded-md cursor-pointer"
             >
-              {sensorTypes.map((sensor) => (
+              {SensorTypes().map((sensor) => (
                 <option key={sensor.type} value={sensor.type}>
                   {sensor.label}
                 </option>
@@ -153,7 +150,7 @@ export default function AddSensorModal({
               onChange={(e) => setSelectedConnectivityType(e.target.value)}
               className="flex border-2 border-slate-500 w-full p-2 rounded-md cursor-pointer"
             >
-              {sensorTypes
+              {SensorTypes()
                 .find((sensor) => sensor.type === selectedSensorType)
                 ?.connectivity.map((connectivity) => (
                   <option key={connectivity} value={connectivity}>
