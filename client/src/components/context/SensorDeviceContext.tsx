@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { SensorContext, DeviceContext } from "./SensorDeviceContextDefs";
-import type { Device, Sensor } from "../utils/other/Types";
 import useLocalStorage from "../hooks/useLocalStorage";
+import type { Device, Sensor } from "../utils/other/Types";
 
 export const SensorDeviceProvider = ({
   children,

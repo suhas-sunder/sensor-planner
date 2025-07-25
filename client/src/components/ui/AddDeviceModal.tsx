@@ -1,9 +1,8 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import DeviceTypes from "../data/DeviceTypes";
-import { useEffect } from "react";
 import { useSensorDeviceContext } from "../hooks/useSensorDeviceContext.ts";
-import type { Device } from "../utils/other/Types";
+import type { Device } from "../utils/other/Types.tsx";
 
 export default function AddDeviceModal({
   setShowDeviceModal,
@@ -23,11 +22,7 @@ export default function AddDeviceModal({
   const [xPosition, setXPosition] = useState(100);
   const [yPosition, setYPosition] = useState(100);
 
-  const deviceTypes = useMemo(() => {
-    return DeviceTypes();
-  }, []);
-
-  const selectedDevice = deviceTypes.find(
+  const selectedDevice = DeviceTypes().find(
     (d) => d.label === selectedDeviceType
   );
 
@@ -51,22 +46,7 @@ export default function AddDeviceModal({
     };
 
     setDevices((prev: Device[]) => [...prev, submittedData]);
-
-    console.log(submittedData);
   };
-
-  useEffect(() => {
-    if (deviceTypes.length > 0) {
-      const firstDevice = deviceTypes[0];
-      setSelectedDeviceCategory(firstDevice.type);
-      setSelectedDeviceType(firstDevice.label);
-      setDeviceName(`${firstDevice.label} - ${uuidv4().slice(0, 8)}`);
-
-      if (firstDevice.connectivity && firstDevice.connectivity.length > 0) {
-        setSelectedConnectivityType(firstDevice.connectivity[0]);
-      }
-    }
-  }, [deviceTypes]);
 
   return (
     <>
@@ -75,6 +55,7 @@ export default function AddDeviceModal({
         className="fixed inset-0 z-50 flex items-center justify-center"
       >
         <button
+          type="button"
           onClick={() => setShowDeviceModal(false)}
           className="absolute inset-0 bg-slate-900 opacity-10 pointer-events-auto cursor-pointer"
         />
@@ -96,7 +77,7 @@ export default function AddDeviceModal({
                 const selectedCategory = e.target.value;
                 setSelectedDeviceCategory(selectedCategory);
 
-                const firstDeviceInCategory = deviceTypes.find(
+                const firstDeviceInCategory = DeviceTypes().find(
                   (device) => device.type === selectedCategory
                 );
 
@@ -109,7 +90,7 @@ export default function AddDeviceModal({
               }}
               className="flex border-2 border-slate-500 w-full p-2 rounded-md cursor-pointer capitalize"
             >
-              {Array.from(new Set(deviceTypes.map((d) => d.type))).map(
+              {Array.from(new Set(DeviceTypes().map((d) => d.type))).map(
                 (type) => (
                   <option key={type} value={type}>
                     {type}
@@ -130,7 +111,7 @@ export default function AddDeviceModal({
               name="device_type"
               value={selectedDeviceType}
               onChange={(e) => {
-                const selected = deviceTypes.find(
+                const selected = DeviceTypes().find(
                   (device) => device.label === e.target.value
                 );
                 if (selected) {
@@ -142,7 +123,7 @@ export default function AddDeviceModal({
             >
               {Array.from(
                 new Set(
-                  deviceTypes
+                  DeviceTypes()
                     .filter((device) => device.type === selectedDeviceCategory)
                     .map((device) => device.label)
                 )

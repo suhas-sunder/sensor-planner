@@ -2,7 +2,7 @@ import { useState } from "react";
 import AddDeviceModal from "../ui/AddDeviceModal";
 // import Searchbar from "../ui/Searchbar";
 import AddSensorModal from "../ui/AddSensorModal";
-import NodeController from "../ui/NodeController";
+import NodeController from "../ui/EditNodeMenu";
 
 export default function SidebarMenu() {
   const [showSensorModal, setShowSensorModal] = useState(false);
@@ -11,14 +11,10 @@ export default function SidebarMenu() {
   return (
     <>
       {showSensorModal && (
-        <AddSensorModal
-          setShowSensorModal={setShowSensorModal}
-        />
+        <AddSensorModal setShowSensorModal={setShowSensorModal} />
       )}
       {showDeviceModal && (
-        <AddDeviceModal
-          setShowDeviceModal={setShowDeviceModal}
-        />
+        <AddDeviceModal setShowDeviceModal={setShowDeviceModal} />
       )}
       <div className="flex flex-col min-w-60 items-center bg-slate-800 gap-5 text-white">
         <h1 className="flex font-bold text-2xl mt-4 "> 4th Floor </h1>
