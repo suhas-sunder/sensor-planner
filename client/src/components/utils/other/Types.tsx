@@ -57,15 +57,17 @@ export type Rooms = Room[];
 export type SearchItem = {
   id: string;
   name: string;
-  type: string; // e.g., 'motion_sensor', 'wifi_sensor', 'fan', 'fridge'
+  type: string;
 };
 
 export type LocalStorageData = {
   actionType: string;
   sensors?: Sensor[];
   devices?: Device[];
+  selectedNodeId?: string | null;
   setSensors?: React.Dispatch<React.SetStateAction<Sensor[]>>;
   setDevices?: React.Dispatch<React.SetStateAction<Device[]>>;
+  setSelectedNodeId?: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 export type CursorPosition = {

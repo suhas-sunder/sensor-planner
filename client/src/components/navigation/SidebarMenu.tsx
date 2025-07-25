@@ -1,41 +1,29 @@
 import { useState } from "react";
-import EditDeviceModal from "../ui/EditDeviceModal";
-import Searchbar from "../ui/Searchbar";
-import EditSensorModal from "../ui/EditSensorModal";
+import AddDeviceModal from "../ui/AddDeviceModal";
+// import Searchbar from "../ui/Searchbar";
+import AddSensorModal from "../ui/AddSensorModal";
+import NodeController from "../ui/NodeController";
 
 export default function SidebarMenu() {
   const [showSensorModal, setShowSensorModal] = useState(false);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
 
-
   return (
     <>
       {showSensorModal && (
-        <EditSensorModal
+        <AddSensorModal
           setShowSensorModal={setShowSensorModal}
-          modalType="add"
         />
       )}
       {showDeviceModal && (
-        <EditDeviceModal
+        <AddDeviceModal
           setShowDeviceModal={setShowDeviceModal}
-          modalType="add"
         />
       )}
       <div className="flex flex-col min-w-60 items-center bg-slate-800 gap-5 text-white">
         <h1 className="flex font-bold text-2xl mt-4 "> 4th Floor </h1>
-        <Searchbar />
-        <div className="flex flex-col bg-slate-700 gap-3 rounded-md p-4 px-5">
-          <div>Motion Sensor 1 </div>
-          <div className="flex justify-center items-center min-w-40 min-h-40 bg-slate-600 rounded-md">
-            PREVIEW IMG
-          </div>
-          <div>Status: Active </div>
-          <div>Setting 1</div>
-          <div>Setting 2</div>
-          <div>Setting 3</div>
-          <div>Setting 4</div>
-        </div>
+        {/* <Searchbar /> */}
+        <NodeController />
 
         <div className="flex flex-col gap-4 mt-auto -translate-y-6">
           <button
