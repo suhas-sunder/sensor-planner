@@ -67,3 +67,7 @@ export type LocalStorageData = {
   setSensors?: React.Dispatch<React.SetStateAction<Sensor[]>>;
   setDevices?: React.Dispatch<React.SetStateAction<Device[]>>;
 };
+
+export type CursorPosition = {
+  cursorPosition: { x: number; y: number } | null;
+};
