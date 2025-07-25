@@ -10,14 +10,10 @@ export default function AddDeviceModal({
   setShowDeviceModal: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { setDevices } = useSensorDeviceContext();
-  const [selectedDeviceType, setSelectedDeviceType] = useState("motion");
-  const [selectedDeviceCategory, setSelectedDeviceCategory] =
-    useState("appliance");
-  const [deviceName, setDeviceName] = useState(
-    `Motion Device - ${uuidv4().slice(0, 8)}`
-  );
-  const [selectedConnectivityType, setSelectedConnectivityType] =
-    useState("asdf");
+  const [selectedDeviceType, setSelectedDeviceType] = useState("");
+  const [selectedDeviceCategory, setSelectedDeviceCategory] = useState("");
+  const [deviceName, setDeviceName] = useState("");
+  const [selectedConnectivityType, setSelectedConnectivityType] = useState("");
   const [radius, setRadius] = useState(30);
   const [xPosition, setXPosition] = useState(100);
   const [yPosition, setYPosition] = useState(100);

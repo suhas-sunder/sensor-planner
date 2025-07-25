@@ -9,8 +9,9 @@ import DrawDevice from "../utils/drawings/DrawDevice.js";
 import useCanvasSize from "../hooks/useCanvasSize.js";
 import usePulseAnimation from "../hooks/usePulseAnimation.js";
 import useSensorDeviceContext from "../hooks/useSensorDeviceContext.js";
-import DetectTouchingNodes from "../utils/computations/DetectTouchingNodes.js";
 import DispCursorPos from "../overlays/DispCursorPos.js";
+import DetectConnectedNodes from "../utils/computations/DetectConnectedNodes.js";
+import DetectInterferenceNodes from "../utils/computations/DetectInterferenceNodes.js";
 const CanvasArea: React.FC<CanvasAreaProps> = ({
   selectedNodeId,
   onCanvasClick,
@@ -142,12 +143,21 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
       // Only recalculate if something was being dragged
       if (draggingDeviceId || draggingSensorId) {
-        const { updatedSensors, updatedDevices } = DetectTouchingNodes(
+        // Step 1: Calculate connected nodes based on sensor and device positions and overlapping protocols
+        const { updatedSensors, updatedDevices } = DetectConnectedNodes(
           sensors,
           devices
         );
-        setSensors(updatedSensors);
-        setDevices(updatedDevices);
+
+        // Step 2: Calculate interference between sensors and devices based on overlapping protocols
+        const {
+          updatedSensors: sensorsWithInterference,
+          updatedDevices: devicesWithInterference,
+        } = DetectInterferenceNodes(updatedSensors, updatedDevices);
+
+        // Step 3: Update the state for sensors and devices
+        setSensors(sensorsWithInterference);
+        setDevices(devicesWithInterference);
       }
 
       console.log("Sensors: " + JSON.stringify(sensors));
