@@ -325,8 +325,9 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       const delta = (timestamp - lastTimestamp) / 1000;
       lastTimestamp = timestamp;
 
-      setPeople((prevPeople) =>
-        prevPeople.map((person) => {
+      setPeople((prevPeople) => {
+        const now = new Date().toISOString();
+        const newPeople = prevPeople.map((person) => {
           if (person.floor !== currentFloor || person.path.length < 2) {
             return person;
           }
@@ -350,17 +351,59 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
           const traveled = Math.hypot(newX - start.x, newY - start.y);
           const reached = traveled >= distance;
 
+          const updatedPosition = reached ? end : { x: newX, y: newY };
+
+          // Check overlap with motion sensors
+          for (const sensor of sensorsRef.current) {
+            if (
+              (sensor.type === "motion" || sensor.type === "presence") &&
+              sensor.floor === person.floor
+            ) {
+              const sx = sensor.x;
+              const sy = sensor.y;
+              const sr = sensor.sensor_rad ?? 150;
+
+              const dist = Math.hypot(
+                updatedPosition.x - sx,
+                updatedPosition.y - sy
+              );
+              const inRange = dist <= sr;
+
+              const key = `${sensor.id}-${person.id}`;
+              if (inRange) {
+                if (!(window as any)._motionLogActive?.[key]) {
+                  console.log(
+                    `[MOTION START] ${sensor.name} saw ${person.id} at ${now}`
+                  );
+                  (window as any)._motionLogActive = {
+                    ...(window as any)._motionLogActive,
+                    [key]: now,
+                  };
+                }
+              } else {
+                if ((window as any)._motionLogActive?.[key]) {
+                  console.log(
+                    `[MOTION END] ${sensor.name} lost ${person.id} at ${now}`
+                  );
+                  delete (window as any)._motionLogActive[key];
+                }
+              }
+            }
+          }
+
           return {
             ...person,
-            currentPosition: reached ? end : { x: newX, y: newY },
+            currentPosition: updatedPosition,
             currentIndex: reached ? nextIndex : currentIndex,
             direction:
               reached && (nextIndex === path.length - 1 || nextIndex === 0)
                 ? (-direction as 1 | -1)
                 : direction,
           };
-        })
-      );
+        });
+
+        return newPeople;
+      });
 
       animationFrameId = requestAnimationFrame(updatePositions);
     };
