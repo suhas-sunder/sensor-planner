@@ -1,4 +1,5 @@
 import "./App.css";
+import { EventsProvider } from "./components/context/EventsContext";
 import { SensorDeviceProvider } from "./components/context/SensorDeviceContext";
 import useLocalStorage from "./components/hooks/useLocalStorage";
 import Footer from "./components/navigation/Footer";
@@ -9,12 +10,14 @@ export default function App() {
   useLocalStorage({ actionType: "user-update" });
 
   return (
-    <SensorDeviceProvider>
-      <div className="flex flex-col min-h-screen bg-slate-200">
-        <NavBar />
-        <AllRoutes />
-        <Footer />
-      </div>
-    </SensorDeviceProvider>
+    <EventsProvider>
+      <SensorDeviceProvider>
+        <div className="flex flex-col min-h-screen bg-slate-200">
+          <NavBar />
+          <AllRoutes />
+          <Footer />
+        </div>
+      </SensorDeviceProvider>
+    </EventsProvider>
   );
 }

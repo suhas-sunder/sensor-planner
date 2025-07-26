@@ -14,10 +14,12 @@ export default function useLocalStorage({
   setPeople,
   setSelectedNodeId,
   selectedNodeId,
+  eventLog,
+  setEventLog,
 }: LocalStorageData) {
   const hasInitialized = useRef(false); // Used across all effects
 
-  // ✅ Universal timer to mark initialization done
+  // Universal timer to mark initialization done
   useEffect(() => {
     const timer = setTimeout(() => {
       hasInitialized.current = true;
@@ -26,13 +28,14 @@ export default function useLocalStorage({
     return () => clearTimeout(timer);
   }, []);
 
-  // ✅ Initialization: load from localStorage
+  // Initialization: load from localStorage
   useEffect(() => {
     if (actionType !== "init" || hasInitialized.current) return;
 
     const storedSensors = localStorage.getItem("sensorData");
     const storedDevices = localStorage.getItem("deviceData");
     const storedPeople = localStorage.getItem("peopleData");
+    const storedEvents = localStorage.getItem("eventLog");
     const storedSelectedNodeId = localStorage.getItem("selectedNodeId");
 
     try {
@@ -53,23 +56,37 @@ export default function useLocalStorage({
       console.error("Failed to parse people data");
     }
 
+    try {
+      if (storedEvents && setEventLog) setEventLog(JSON.parse(storedEvents));
+    } catch {
+      console.error("Failed to parse event log data");
+    }
+
     if (storedSelectedNodeId && setSelectedNodeId) {
       setSelectedNodeId(storedSelectedNodeId);
     }
-  }, [actionType, setSensors, setDevices, setPeople, setSelectedNodeId]);
+  }, [
+    actionType,
+    setSensors,
+    setDevices,
+    setPeople,
+    setEventLog,
+    setSelectedNodeId,
+  ]);
 
-  // ✅ Sync changes to localStorage
+  // Sync changes to localStorage
   useEffect(() => {
     if (actionType !== "sync" || !hasInitialized.current) return;
 
     if (sensors) localStorage.setItem("sensorData", JSON.stringify(sensors));
     if (devices) localStorage.setItem("deviceData", JSON.stringify(devices));
     if (people) localStorage.setItem("peopleData", JSON.stringify(people));
+    if (eventLog) localStorage.setItem("eventLog", JSON.stringify(eventLog));
     if (selectedNodeId || selectedNodeId === null)
       localStorage.setItem("selectedNodeId", selectedNodeId || "");
-  }, [actionType, sensors, devices, people, selectedNodeId]);
+  }, [actionType, sensors, devices, people, eventLog, selectedNodeId]);
 
-  // ✅ Generate user info on first load if missing
+  // Generate user info on first load if missing
   useEffect(() => {
     if (actionType !== "user-update") return;
 

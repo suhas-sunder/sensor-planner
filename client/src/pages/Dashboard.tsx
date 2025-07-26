@@ -51,14 +51,41 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="flex w-full h-screen bg-black">
-      <SidebarMenu />
-      <CanvasArea
-        selectedNodeId={selectedNodeId}
-        onCanvasClick={handleCanvasClick}
-        viewport={viewport}
-        setViewport={setViewport}
-      />
+    <div className="flex flex-col w-full  bg-black">
+      <div className="flex flex-row w-full h-full">
+        <SidebarMenu />
+        <CanvasArea
+          selectedNodeId={selectedNodeId}
+          onCanvasClick={handleCanvasClick}
+          viewport={viewport}
+          setViewport={setViewport}
+        />
+      </div>
+      <div className="inline-flex flex-col gap-5 bg-slate-200 w-full min-w-20  p-4 h-100">
+        <h2 className="flex font-semibold text-sm text-slate-800 text-[2rem] underline">
+          Summary of Simulation & Activity
+        </h2>
+        <div className="grid grid-cols-3 gap-4 mx-8">
+          <div className="flex flex-col items-center bg-white p-4 rounded-lg">
+            <h3>Movement Detection</h3>
+          </div>
+          <div className="flex flex-col items-center bg-white p-4 rounded-lg">
+            <h3>Device Status Updates</h3>
+          </div>
+          <div className="flex flex-col items-center bg-white p-4 rounded-lg">
+            <h3>Sensor Status Updates</h3>
+          </div>
+          <div className="flex flex-col items-center bg-white p-4 rounded-lg">
+            <h3>Recent Events</h3>
+          </div>
+          <div className="flex flex-col items-center bg-white p-4 rounded-lg">
+            <h3>Connected Nodes</h3>
+          </div>
+          <div className="flex flex-col items-center bg-white p-4 rounded-lg">
+            <h3>Interfering Nodes</h3>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
