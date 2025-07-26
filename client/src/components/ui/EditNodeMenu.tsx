@@ -6,6 +6,8 @@ import type { Sensor, Device } from "../utils/other/Types";
 import DetectConnectedNodes from "../utils/computations/DetectConnectedNodes";
 import DetectInterferenceNodes from "../utils/computations/DetectInterferenceNodes";
 import NodeConnectionSummary from "../layout/NodeConnectionSummary";
+import EditSensors from "./EditSensors";
+import EditDevices from "./EditDevices";
 
 export default function EditNodeMenu() {
   const { sensors, devices, setSensors, setDevices, selectedNodeId } =
@@ -80,10 +82,6 @@ export default function EditNodeMenu() {
     setPendingUpdate(null);
   }, [pendingUpdate]);
 
-  const availableSensorTypes = useMemo(() => {
-    return sensorTypes.filter((s) => s.category === selectedSensorCategory);
-  }, [sensorTypes, selectedSensorCategory]);
-
   const availableConnectivityOptions = useMemo(() => {
     if (!editableNode) return [];
 
@@ -110,12 +108,6 @@ export default function EditNodeMenu() {
     selectedDeviceLabel,
   ]);
 
-  const availableDeviceLabels = useMemo(() => {
-    return deviceTypes
-      .filter((d) => d.type === selectedDeviceCategory)
-      .map((d) => d.label);
-  }, [deviceTypes, selectedDeviceCategory]);
-
   const handleChange = <K extends keyof (Sensor & Device)>(
     key: K,
     value: (Sensor & Device)[K]
@@ -123,85 +115,6 @@ export default function EditNodeMenu() {
     setEditableNode((prev) => {
       if (!prev) return prev;
       const updated = { ...prev, [key]: value };
-      setPendingUpdate(updated);
-      return updated;
-    });
-  };
-
-  const handleSensorCategoryChange = (category: string) => {
-    const firstMatch = sensorTypes.find((s) => s.category === category);
-    if (!firstMatch) return;
-
-    setSelectedSensorCategory(category);
-    setSelectedSensorType(firstMatch.type);
-
-    setEditableNode((prev) => {
-      if (!prev || !("sensor_rad" in prev)) return prev;
-      const updated = {
-        ...prev,
-        type: firstMatch.type,
-        connectivity: [firstMatch.connectivity[0] ?? ""],
-      };
-      setPendingUpdate(updated);
-      return updated;
-    });
-  };
-
-  const handleSensorTypeChange = (type: string) => {
-    setSelectedSensorType(type);
-
-    const selected = sensorTypes.find((s) => s.type === type);
-    if (!selected) return;
-
-    setEditableNode((prev) => {
-      if (!prev || !("sensor_rad" in prev)) return prev;
-      const updated = {
-        ...prev,
-        type,
-        connectivity: [selected.connectivity[0] ?? ""],
-      };
-      setPendingUpdate(updated);
-      return updated;
-    });
-  };
-
-  const handleDeviceCategoryChange = (category: string) => {
-    setSelectedDeviceCategory(category);
-    const firstLabel =
-      deviceTypes.find((d) => d.type === category)?.label ?? "";
-    setSelectedDeviceLabel(firstLabel);
-
-    const newConn =
-      deviceTypes.find((d) => d.type === category && d.label === firstLabel)
-        ?.connectivity[0] ?? "";
-
-    setEditableNode((prev) => {
-      if (!prev || !("device_rad" in prev)) return prev;
-      const updated = {
-        ...prev,
-        type: category,
-        label: firstLabel,
-        connectivity: [newConn],
-      };
-      setPendingUpdate(updated);
-      return updated;
-    });
-  };
-
-  const handleDeviceLabelChange = (label: string) => {
-    setSelectedDeviceLabel(label);
-    const newConn =
-      deviceTypes.find(
-        (d) => d.type === selectedDeviceCategory && d.label === label
-      )?.connectivity[0] ?? "";
-
-    setEditableNode((prev) => {
-      if (!prev || !("device_rad" in prev)) return prev;
-      const updated = {
-        ...prev,
-        label,
-        connectivity: [newConn],
-      };
       setPendingUpdate(updated);
       return updated;
     });
@@ -256,129 +169,31 @@ export default function EditNodeMenu() {
         />
       </div>
 
-      {"sensor_rad" in editableNode && (
-        <>
-          <div className="flex flex-col gap-2 text-sm">
-            Sensor Category:{" "}
-            <select
-              className="bg-slate-600 p-1 rounded w-full"
-              value={selectedSensorCategory}
-              onChange={(e) => handleSensorCategoryChange(e.target.value)}
-            >
-              {[...new Set(sensorTypes.map((s) => s.category))].map(
-                (category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                )
-              )}
-            </select>
-          </div>
+      <EditDevices
+        selectedDeviceCategory={selectedDeviceCategory}
+        setSelectedDeviceCategory={setSelectedDeviceCategory}
+        selectedDeviceLabel={selectedDeviceLabel}
+        setSelectedDeviceLabel={setSelectedDeviceLabel}
+        deviceTypes={deviceTypes}
+        editableNode={editableNode}
+        setEditableNode={setEditableNode}
+        setPendingUpdate={setPendingUpdate}
+        availableConnectivityOptions={availableConnectivityOptions}
+        handleChange={handleChange}
+      />
 
-          <div className="flex flex-col gap-2 text-sm">
-            Sensor Type:{" "}
-            <select
-              className="bg-slate-600 p-1 rounded w-full"
-              value={selectedSensorType}
-              onChange={(e) => handleSensorTypeChange(e.target.value)}
-            >
-              {availableSensorTypes.map((s) => (
-                <option key={s.type} value={s.type}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-2 justify-center items-center text-sm">
-            Sensor Radius:{" "}
-            <input
-              className="bg-slate-600 p-1 rounded w-full"
-              type="number"
-              value={editableNode.sensor_rad}
-              onChange={(e) =>
-                handleChange("sensor_rad", parseFloat(e.target.value))
-              }
-            />
-          </div>
-
-          <div className="flex flex-col gap-2 text-sm">
-            Connectivity:{" "}
-            <select
-              className="bg-slate-600 p-1 rounded w-full"
-              value={editableNode.connectivity[0] || ""}
-              onChange={(e) => handleChange("connectivity", [e.target.value])}
-            >
-              {availableConnectivityOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-        </>
-      )}
-
-      {"device_rad" in editableNode && (
-        <>
-          <div className="flex flex-col gap-2 text-sm">
-            Device Category:{" "}
-            <select
-              className="bg-slate-600 p-1 rounded w-full capitalize"
-              value={selectedDeviceCategory}
-              onChange={(e) => handleDeviceCategoryChange(e.target.value)}
-            >
-              {[...new Set(deviceTypes.map((d) => d.type))].map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-2 text-sm">
-            Device Type:{" "}
-            <select
-              className="bg-slate-600 p-1 rounded w-full capitalize"
-              value={selectedDeviceLabel}
-              onChange={(e) => handleDeviceLabelChange(e.target.value)}
-            >
-              {availableDeviceLabels.map((label) => (
-                <option key={label} value={label}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-2 justify-center items-center text-sm">
-            Device Radius:{" "}
-            <input
-              className="bg-slate-600 p-1 rounded w-full"
-              type="number"
-              value={editableNode.device_rad}
-              onChange={(e) =>
-                handleChange("device_rad", parseFloat(e.target.value))
-              }
-            />
-          </div>
-
-          <div className="flex flex-col gap-2 text-sm">
-            Connectivity:{" "}
-            <select
-              className="bg-slate-600 p-1 rounded w-full"
-              value={editableNode.connectivity[0] || ""}
-              onChange={(e) => handleChange("connectivity", [e.target.value])}
-            >
-              {availableConnectivityOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        </>
-      )}
+      <EditSensors
+        editableNode={editableNode}
+        setEditableNode={setEditableNode}
+        sensorTypes={sensorTypes}
+        selectedSensorCategory={selectedSensorCategory}
+        setSelectedSensorCategory={setSelectedSensorCategory}
+        selectedSensorType={selectedSensorType}
+        setSelectedSensorType={setSelectedSensorType}
+        setPendingUpdate={setPendingUpdate}
+        handleChange={handleChange}
+        availableConnectivityOptions={availableConnectivityOptions}
+      />
 
       <NodeConnectionSummary node={editableNode} />
       <button

@@ -14,7 +14,8 @@ export default function DrawPeople(
     name = "",
   } = person;
 
-  if (path.length < 2) return;
+  // --- Guard: Must have at least 2 points to draw/animate ---
+  if (!Array.isArray(path) || path.length < 2) return;
 
   const nextIndex = currentIndex + direction;
   const reachedEnd = nextIndex < 0 || nextIndex >= path.length;
@@ -22,17 +23,20 @@ export default function DrawPeople(
   const start = path[currentIndex];
   const end = path[reachedEnd ? currentIndex - direction : nextIndex];
 
+  // --- Guard: Defensive check for missing points ---
+  if (!start || !end) return;
+
   const dx = end.x - start.x;
   const dy = end.y - start.y;
 
   const x = start.x + dx * progress - viewport.x;
   const y = start.y + dy * progress - viewport.y;
 
-  // Draw solid square for the person
+  // --- Draw person square ---
   ctx.fillStyle = color;
   ctx.fillRect(x - 4, y - 4, 8, 8);
 
-  // Draw label slightly above
+  // --- Draw label ---
   if (name) {
     ctx.font = "12px sans-serif";
     ctx.fillStyle = color;
@@ -41,7 +45,7 @@ export default function DrawPeople(
     ctx.fillText(name, x, y - 6);
   }
 
-  // Draw dotted path
+  // --- Draw dotted path ---
   ctx.beginPath();
   ctx.setLineDash([4, 4]);
   ctx.strokeStyle = color;
@@ -50,6 +54,9 @@ export default function DrawPeople(
   for (let i = 0; i < path.length - 1; i++) {
     const s = path[i];
     const e = path[i + 1];
+
+    if (!s || !e) continue;
+
     ctx.moveTo(s.x - viewport.x, s.y - viewport.y);
     ctx.lineTo(e.x - viewport.x, e.y - viewport.y);
   }
