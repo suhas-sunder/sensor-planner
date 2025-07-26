@@ -46,6 +46,8 @@ export type LocalStorageData = {
   setSensors?: React.Dispatch<React.SetStateAction<Sensor[]>>;
   setDevices?: React.Dispatch<React.SetStateAction<Device[]>>;
   setSelectedNodeId?: React.Dispatch<React.SetStateAction<string | null>>;
+  eventLog?: SimulationEvent[];
+  setEventLog?: React.Dispatch<React.SetStateAction<SimulationEvent[]>>;
 };
 
 export type CursorPosition = {
@@ -91,4 +93,14 @@ export type Person = {
   color?: string;
   animationSpeed: number; // pixels per second
   progress?: number;
+};
+
+type SimulationEvent = {
+  id: string;
+  floor: number;
+  nodeId: string;
+  nodeType: "sensor" | "device";
+  eventType: "connectivity" | "interference" | "motion" | "status";
+  timestamp: number;
+  message: string; // Human-readable summary
 };
