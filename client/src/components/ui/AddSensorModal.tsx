@@ -218,7 +218,6 @@ export default function AddSensorModal({
           />
         </div>
 
-        {/* Submit */}
         <button
           type="submit"
           className="text-white bg-green-600 p-2 rounded-md font-bold hover:brightness-110 hover:scale-105 transition-transform"

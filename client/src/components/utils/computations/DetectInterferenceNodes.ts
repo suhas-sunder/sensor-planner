@@ -45,7 +45,8 @@ export default function DetectInterferenceNodes(
       const sharedInterference = s.connectivity.some(
         (sensorProtocol) =>
           d.interferenceProtocols.includes(sensorProtocol) &&
-          deviceConnectivity.includes(sensorProtocol)
+          (deviceConnectivity.length === 0 ||
+            deviceConnectivity.includes(sensorProtocol))
       );
 
       const alreadyConnected =
