@@ -6,35 +6,6 @@ export interface CanvasAreaProps {
   onCanvasDoubleClick?: (x: number, y: number) => void;
 }
 
-export type Sensor = {
-  id: string;
-  x: number;
-  y: number;
-  type: string;
-  name: string;
-  sensor_rad: number;
-  connectivity: string[];
-  connectedDeviceIds?: string[];
-  interferenceIds?: string[];
-  floor: number;
-};
-
-export type Device = {
-  id: string;
-  x: number;
-  y: number;
-  type: string;
-  label: string;
-  name: string;
-  device_rad: number;
-  connectivity: string[];
-  compatibleSensors: string[];
-  interferenceProtocols: string[];
-  connectedSensorIds?: string[];
-  interferenceIds?: string[];
-  floor: number;
-};
-
 type WallSide = "top" | "bottom" | "left" | "right";
 
 type WallFeature = {
@@ -77,6 +48,35 @@ export type LocalStorageData = {
 
 export type CursorPosition = {
   cursorPosition: { x: number; y: number } | null;
+};
+
+export type Sensor = {
+  id: string;
+  x: number;
+  y: number;
+  type: string;
+  name: string;
+  sensor_rad: number;
+  connectivity: string[];
+  connectedDeviceIds?: string[];
+  interferenceIds?: string[];
+  floor: number;
+};
+
+export type Device = {
+  id: string;
+  x: number;
+  y: number;
+  type: string;
+  label: string;
+  name: string;
+  device_rad: number;
+  connectivity: string[];
+  compatibleSensors: string[];
+  interferenceProtocols: string[];
+  connectedSensorIds?: string[];
+  interferenceIds?: string[];
+  floor: number;
 };
 
 export type Person = {

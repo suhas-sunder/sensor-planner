@@ -11,11 +11,17 @@ export default function DetectInterferenceNodes(
   const deviceMap: { [id: string]: Device } = {};
 
   for (const s of sensors) {
-    sensorMap[s.id] = { ...s, interferenceIds: [] };
+    sensorMap[s.id] = {
+      ...s,
+      interferenceIds: [],
+    };
   }
 
   for (const d of devices) {
-    deviceMap[d.id] = { ...d, interferenceIds: [] };
+    deviceMap[d.id] = {
+      ...d,
+      interferenceIds: [],
+    };
   }
 
   for (const s of sensors) {
@@ -29,8 +35,17 @@ export default function DetectInterferenceNodes(
       const deviceRadius = d.device_rad ?? defaultDeviceRadius;
       const withinRange = distance <= sensorRadius + deviceRadius;
 
-      const sharedInterference = s.connectivity.some((p) =>
-        d.interferenceProtocols.includes(p)
+      // Sanitize device connectivity to filter out empty strings
+      const deviceConnectivity = (d.connectivity ?? []).filter(
+        (c) => c && c.trim() !== ""
+      );
+
+      // Interference must be mutual — sensor protocol must match device's interferenceProtocols
+      // AND device must be actively using that protocol in connectivity
+      const sharedInterference = s.connectivity.some(
+        (sensorProtocol) =>
+          d.interferenceProtocols.includes(sensorProtocol) &&
+          deviceConnectivity.includes(sensorProtocol)
       );
 
       const alreadyConnected =
