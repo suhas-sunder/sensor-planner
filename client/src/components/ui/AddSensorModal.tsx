@@ -3,12 +3,15 @@ import { v4 as uuidv4 } from "uuid";
 import SensorTypes from "../data/SensorTypes";
 import useSensorDeviceContext from "../hooks/useSensorDeviceContext";
 import type { Sensor } from "../utils/other/Types";
+import { useParams } from "react-router-dom";
 
 export default function AddSensorModal({
   setShowSensorModal,
 }: {
   setShowSensorModal: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const { floorId } = useParams(); // returns "1", "2", etc.
+  const currentFloor = Number(floorId) || 1; // fallback to floor 1 if undefined or invalid
   const { setSensors } = useSensorDeviceContext();
 
   const [selectedSensorType, setSelectedSensorType] = useState("motion");
@@ -29,6 +32,7 @@ export default function AddSensorModal({
 
     const submittedData: Sensor = {
       id: `${formData.get("sensor_type")}-${uuidv4()}`,
+      floor: currentFloor,
       type: String(formData.get("sensor_type") ?? ""),
       name: String(formData.get("sensor_name") ?? ""),
       x: Number(formData.get("x_position")),

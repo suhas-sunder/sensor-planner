@@ -8,14 +8,14 @@ export const SensorDeviceProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [sensors, setSensors] = useState<Sensor[]>([]);
-  const [devices, setDevices] = useState<Device[]>([]);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [sensors, setSensors] = useState<Sensor[]>([]); // State to hold the list of sensors and its setter
+  const [devices, setDevices] = useState<Device[]>([]); // State to hold the list of devices and its setter
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null); // State to track the currently selected node ID
 
-  // Optional: Init user if needed
+  // Optionally initialize or update user information in localStorage when component mounts
   useLocalStorage({ actionType: "user-init-update" });
 
-  // Load once from localStorage
+  // Load sensors, devices, and selected node ID from localStorage only once on component mount
   useLocalStorage({
     actionType: "init",
     setSensors,
@@ -23,7 +23,7 @@ export const SensorDeviceProvider = ({
     setSelectedNodeId,
   });
 
-  // Sync whenever sensors/devices update
+  // Sync the current sensors, devices, and selected node ID to localStorage whenever they change
   useLocalStorage({
     actionType: "sync",
     sensors,

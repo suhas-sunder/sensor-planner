@@ -5,6 +5,7 @@ import DeviceTypes from "../data/DeviceTypes";
 import type { Sensor, Device } from "../utils/other/Types";
 import DetectConnectedNodes from "../utils/computations/DetectConnectedNodes";
 import DetectInterferenceNodes from "../utils/computations/DetectInterferenceNodes";
+import NodeConnectionSummary from "../layout/NodeConnectionSummary";
 
 export default function EditNodeMenu() {
   const { sensors, devices, setSensors, setDevices, selectedNodeId } =
@@ -248,7 +249,7 @@ export default function EditNodeMenu() {
 
       {"sensor_rad" in editableNode && (
         <>
-          <div className="text-sm">
+          <div className="flex flex-col gap-2 text-sm">
             Sensor Type:{" "}
             <select
               className="bg-slate-600 p-1 rounded w-full"
@@ -263,7 +264,7 @@ export default function EditNodeMenu() {
             </select>
           </div>
 
-          <div className="text-sm">
+          <div className="flex flex-col gap-2 justify-center items-center text-sm">
             Sensor Radius:{" "}
             <input
               className="bg-slate-600 p-1 rounded w-20"
@@ -275,7 +276,7 @@ export default function EditNodeMenu() {
             />
           </div>
 
-          <div className="text-sm">
+          <div className="flex flex-col gap-2 text-sm">
             Connectivity:{" "}
             <select
               className="bg-slate-600 p-1 rounded w-full"
@@ -294,7 +295,7 @@ export default function EditNodeMenu() {
 
       {"device_rad" in editableNode && (
         <>
-          <div className="text-sm">
+          <div className="flex flex-col gap-2 text-sm">
             Device Category:{" "}
             <select
               className="bg-slate-600 p-1 rounded w-full capitalize"
@@ -309,7 +310,7 @@ export default function EditNodeMenu() {
             </select>
           </div>
 
-          <div className="text-sm">
+          <div className="flex flex-col gap-2 text-sm">
             Device Type:{" "}
             <select
               className="bg-slate-600 p-1 rounded w-full capitalize"
@@ -324,7 +325,7 @@ export default function EditNodeMenu() {
             </select>
           </div>
 
-          <div className="text-sm">
+          <div className="flex flex-col gap-2 justify-center items-center text-sm">
             Device Radius:{" "}
             <input
               className="bg-slate-600 p-1 rounded w-20"
@@ -336,7 +337,7 @@ export default function EditNodeMenu() {
             />
           </div>
 
-          <div className="text-sm">
+          <div className="flex flex-col gap-2 text-sm">
             Connectivity:{" "}
             <select
               className="bg-slate-600 p-1 rounded w-full"
@@ -353,6 +354,7 @@ export default function EditNodeMenu() {
         </>
       )}
 
+      <NodeConnectionSummary node={editableNode} />
       <button
         onClick={handleDelete}
         className="mt-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded cursor-pointer"

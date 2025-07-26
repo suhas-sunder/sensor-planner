@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="flex items-center justify-center bottom-0 bg-slate-500 text-white w-full">
+    <footer className="flex items-center justify-center bottom-0 bg-slate-600  w-full text-blue-200 py-2">
       <ul className="flex flex-col items-center justify-center gap-4">
         {/* <li>
           <NavLink
