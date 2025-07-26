@@ -81,12 +81,13 @@ export type Device = {
 
 export type Person = {
   id: string;
+  name: string;
   floor: number;
   path: { x: number; y: number }[];
   currentIndex: number;
   direction: 1 | -1;
   blink: boolean;
   color?: string;
-  currentPosition: { x: number; y: number };
   animationSpeed: number; // pixels per second
+  progress?: number;
 };

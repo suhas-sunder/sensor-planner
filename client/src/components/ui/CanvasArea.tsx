@@ -44,23 +44,24 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   const [lastPan, setLastPan] = useState<{ x: number; y: number } | null>(null); // Track last mouse position
   const [draggingSensorId, setDraggingSensorId] = useState<string | null>(null);
   const [draggingDeviceId, setDraggingDeviceId] = useState<string | null>(null);
-  const defaultSensorRadius = 30;
+  const defaultSensorRadius = 20;
   const [people, setPeople] = useState<Person[]>([
     {
       id: "person-1",
+      name: "person-1",
       floor: 4,
       path: [
-        { x: 100, y: 100 },
-        { x: 400, y: 100 },
+        { x: 50, y: 50 },
+        { x: 400, y: 50 },
+        { x: 300, y: 300 },
         { x: 400, y: 300 },
-        { x: 600, y: 300 },
-        { x: 1200, y: 200 },
+        { x: 300, y: 180 },
+        { x: 300, y: 180 },
       ],
       currentIndex: 0,
       direction: 1,
       blink: true,
       color: "deeppink",
-      currentPosition: { x: 100, y: 100 },
       animationSpeed: 140, // pixels/sec
     },
   ]);
@@ -304,9 +305,11 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       );
     });
 
-    floorPeople.forEach((person) => {
-      DrawPeople(ctx, person, viewport);
-    });
+    floorPeople
+      .filter((person) => person.floor === currentFloor)
+      .forEach((person) => {
+        DrawPeople(ctx, person, viewport);
+      });
   }, [
     floorSensors, // Redraw if floorSensors added, removed, or updated
     floorDevices, // Redraw if floorDevices added, removed, or updated
@@ -325,18 +328,24 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       const delta = (timestamp - lastTimestamp) / 1000;
       lastTimestamp = timestamp;
 
+      // Update people positions based on their paths
       setPeople((prevPeople) => {
         const now = new Date().toISOString();
-        const newPeople = prevPeople.map((person) => {
-          if (person.floor !== currentFloor || person.path.length < 2) {
+
+        return prevPeople.map((person) => {
+          if (person.floor !== currentFloor || person.path.length < 2)
             return person;
-          }
 
-          const { path, currentIndex, direction, animationSpeed = 80 } = person;
-
+          const {
+            path,
+            currentIndex,
+            direction,
+            animationSpeed = 80,
+            progress = 0,
+          } = person;
           const nextIndex = currentIndex + direction;
-          const reachedEnd = nextIndex < 0 || nextIndex >= path.length;
 
+          const reachedEnd = nextIndex < 0 || nextIndex >= path.length;
           const start = path[currentIndex];
           const end = path[reachedEnd ? currentIndex - direction : nextIndex];
 
@@ -344,16 +353,31 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
           const dy = end.y - start.y;
           const distance = Math.hypot(dx, dy);
 
-          const moveStep = animationSpeed * delta;
-          const newX = person.currentPosition.x + (dx / distance) * moveStep;
-          const newY = person.currentPosition.y + (dy / distance) * moveStep;
+          if (distance === 0) {
+            const altNextIndex = reachedEnd
+              ? currentIndex - direction
+              : nextIndex;
+            return {
+              ...person,
+              currentIndex: altNextIndex,
+              progress: 0,
+              direction:
+                altNextIndex === path.length - 1 || altNextIndex === 0
+                  ? (-direction as 1 | -1)
+                  : direction,
+            };
+          }
 
-          const traveled = Math.hypot(newX - start.x, newY - start.y);
-          const reached = traveled >= distance;
+          const step = (animationSpeed * delta) / distance;
+          const newProgress = progress + step;
 
-          const updatedPosition = reached ? end : { x: newX, y: newY };
+          const reached = newProgress >= 1;
+          const clampedProgress = reached ? 1 : newProgress;
 
-          // Check overlap with motion sensors
+          const updatedX = start.x + dx * clampedProgress;
+          const updatedY = start.y + dy * clampedProgress;
+
+          // 🔍 MOTION DETECTION
           for (const sensor of sensorsRef.current) {
             if (
               (sensor.type === "motion" || sensor.type === "presence") &&
@@ -362,11 +386,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
               const sx = sensor.x;
               const sy = sensor.y;
               const sr = sensor.sensor_rad ?? 150;
-
-              const dist = Math.hypot(
-                updatedPosition.x - sx,
-                updatedPosition.y - sy
-              );
+              const dist = Math.hypot(updatedX - sx, updatedY - sy);
               const inRange = dist <= sr;
 
               const key = `${sensor.id}-${person.id}`;
@@ -393,16 +413,14 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
           return {
             ...person,
-            currentPosition: updatedPosition,
             currentIndex: reached ? nextIndex : currentIndex,
             direction:
               reached && (nextIndex === path.length - 1 || nextIndex === 0)
                 ? (-direction as 1 | -1)
                 : direction,
+            progress: reached ? 0 : clampedProgress,
           };
         });
-
-        return newPeople;
       });
 
       animationFrameId = requestAnimationFrame(updatePositions);

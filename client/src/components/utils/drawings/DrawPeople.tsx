@@ -5,34 +5,58 @@ export default function DrawPeople(
   person: Person,
   viewport: { x: number; y: number }
 ) {
-  const { currentPosition, path, blink, color = "hotpink" } = person;
+  const {
+    path,
+    currentIndex,
+    direction,
+    progress = 0,
+    blink,
+    color = "deeppink",
+    name = "",
+  } = person;
 
-  // Adjusted position based on viewport
-  const x = currentPosition.x - viewport.x;
-  const y = currentPosition.y - viewport.y;
+  if (path.length < 2) return;
 
-  // Draw blinking person as square
+  const nextIndex = currentIndex + direction;
+  const reachedEnd = nextIndex < 0 || nextIndex >= path.length;
+
+  const start = path[currentIndex];
+  const end = path[reachedEnd ? currentIndex - direction : nextIndex];
+
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+
+  const x = start.x + dx * progress - viewport.x;
+  const y = start.y + dy * progress - viewport.y;
+
+  // Draw person square
   if (blink) {
     ctx.fillStyle = color;
     ctx.fillRect(x - 4, y - 4, 8, 8);
   }
 
-  // Draw dotted path — one-way only
-  if (path.length > 1) {
-    ctx.beginPath();
-    ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1;
-
-    for (let i = 0; i < path.length - 1; i++) {
-      const start = path[i];
-      const end = path[i + 1];
-
-      ctx.moveTo(start.x - viewport.x, start.y - viewport.y);
-      ctx.lineTo(end.x - viewport.x, end.y - viewport.y);
-    }
-
-    ctx.stroke();
-    ctx.setLineDash([]);
+  // Draw label slightly *above* and styled
+  if (name) {
+    ctx.font = "12px sans-serif";
+    ctx.fillStyle = color;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(name, x, y - 6);
   }
+
+  // Draw dotted path
+  ctx.beginPath();
+  ctx.setLineDash([4, 4]);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1;
+
+  for (let i = 0; i < path.length - 1; i++) {
+    const s = path[i];
+    const e = path[i + 1];
+    ctx.moveTo(s.x - viewport.x, s.y - viewport.y);
+    ctx.lineTo(e.x - viewport.x, e.y - viewport.y);
+  }
+
+  ctx.stroke();
+  ctx.setLineDash([]);
 }
