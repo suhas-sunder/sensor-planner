@@ -40,6 +40,8 @@ export type LocalStorageData = {
   actionType: string;
   sensors?: Sensor[];
   devices?: Device[];
+  people?: Person[];
+  setPeople?: React.Dispatch<React.SetStateAction<Person[]>>;
   selectedNodeId?: string | null;
   setSensors?: React.Dispatch<React.SetStateAction<Sensor[]>>;
   setDevices?: React.Dispatch<React.SetStateAction<Device[]>>;
@@ -86,7 +88,6 @@ export type Person = {
   path: { x: number; y: number }[];
   currentIndex: number;
   direction: 1 | -1;
-  blink: boolean;
   color?: string;
   animationSpeed: number; // pixels per second
   progress?: number;

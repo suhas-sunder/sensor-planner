@@ -25,6 +25,7 @@ export const SensorDeviceProvider = ({
     actionType: "init",
     setSensors,
     setDevices,
+    setPeople,
     setSelectedNodeId,
   });
 
@@ -33,6 +34,7 @@ export const SensorDeviceProvider = ({
     actionType: "sync",
     sensors,
     devices,
+    people,
     selectedNodeId,
     setSelectedNodeId,
   });

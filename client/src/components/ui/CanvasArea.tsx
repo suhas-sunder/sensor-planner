@@ -1,10 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type {
-  CanvasAreaProps,
-  Device,
-  Person,
-  Sensor,
-} from "../utils/other/Types";
+import type { CanvasAreaProps, Device, Sensor } from "../utils/other/Types";
 import RoomData from "../data/RoomData.js";
 import DrawSensor from "../utils/drawings/DrawSensor.js";
 import DrawRoomWithWalls from "../utils/drawings/DrawRoomWithWalls";
@@ -27,7 +22,8 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 }) => {
   const { floorId } = useParams(); // returns "1", "2", etc.
   const currentFloor = Number(floorId) || 1; // fallback to floor 1 if undefined or invalid
-  const { sensors, setSensors, devices, setDevices } = useSensorDeviceContext();
+  const { sensors, setSensors, devices, setDevices, people, setPeople } =
+    useSensorDeviceContext();
   const floorSensors = sensors.filter((s) => s.floor === currentFloor);
   const floorDevices = devices.filter((d) => d.floor === currentFloor);
 
@@ -37,6 +33,9 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   } | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // Create a reference to the canvas
+  const isDraggingRef = useRef(false);
+  const wasDraggingRef = useRef(false);
+
   const canvasSize = useCanvasSize(canvasRef);
   const pulsePhase = usePulseAnimation();
 
@@ -45,26 +44,6 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   const [draggingSensorId, setDraggingSensorId] = useState<string | null>(null);
   const [draggingDeviceId, setDraggingDeviceId] = useState<string | null>(null);
   const defaultSensorRadius = 20;
-  const [people, setPeople] = useState<Person[]>([
-    {
-      id: "person-1",
-      name: "person-1",
-      floor: 4,
-      path: [
-        { x: 50, y: 50 },
-        { x: 400, y: 50 },
-        { x: 300, y: 300 },
-        { x: 400, y: 300 },
-        { x: 300, y: 180 },
-        { x: 300, y: 180 },
-      ],
-      currentIndex: 0,
-      direction: 1,
-      blink: true,
-      color: "#ff1493",
-      animationSpeed: 140, // pixels/sec
-    },
-  ]);
 
   const floorPeople = people.filter((p) => p.floor === currentFloor);
 
@@ -187,6 +166,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
         })
       );
 
+      isDraggingRef.current = true;
       setDraggingSensorId(targetSensor.id);
     } else if (targetDevice) {
       setDevices((prev) =>
@@ -262,6 +242,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
       console.log("Sensors: " + JSON.stringify(sensorsRef.current));
       console.log("Devices: " + JSON.stringify(devicesRef.current));
+      isDraggingRef.current = false;
     };
 
     window.addEventListener("mouseup", handleGlobalMouseUp);
@@ -319,13 +300,38 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     pulsePhase, // Redraw every animation frame to reflect pulse animation
   ]);
 
+  // Update isDraggingRef when draggingSensorId, draggingDeviceId, or isPanning changes
+  // This ensures all animations and rendering can be paused when dragging or panning
+  useEffect(() => {
+    isDraggingRef.current =
+      draggingSensorId !== null || draggingDeviceId !== null || isPanning;
+  }, [draggingSensorId, draggingDeviceId, isPanning]);
+
   useEffect(() => {
     let animationFrameId: number;
     let lastTimestamp: number | null = null;
 
     const updatePositions = (timestamp: number) => {
+      // If we were dragging before, but now we’re not, reset the timestamp
+      if (wasDraggingRef.current && !isDraggingRef.current) {
+        lastTimestamp = timestamp;
+        wasDraggingRef.current = false;
+        animationFrameId = requestAnimationFrame(updatePositions);
+        return;
+      }
+
+      // While dragging, set the flag and skip animation updates
+      if (isDraggingRef.current) {
+        wasDraggingRef.current = true;
+        animationFrameId = requestAnimationFrame(updatePositions);
+        return;
+      }
+
+      // Normal update
       if (lastTimestamp === null) lastTimestamp = timestamp;
+
       const delta = (timestamp - lastTimestamp) / 1000;
+
       lastTimestamp = timestamp;
 
       // Update people positions based on their paths

@@ -10,8 +10,7 @@ export default function DrawPeople(
     currentIndex,
     direction,
     progress = 0,
-    blink,
-    color = "deeppink",
+    color = "#FF1493", // fallback color
     name = "",
   } = person;
 
@@ -29,13 +28,11 @@ export default function DrawPeople(
   const x = start.x + dx * progress - viewport.x;
   const y = start.y + dy * progress - viewport.y;
 
-  // Draw person square
-  if (blink) {
-    ctx.fillStyle = color;
-    ctx.fillRect(x - 4, y - 4, 8, 8);
-  }
+  // Draw solid square for the person
+  ctx.fillStyle = color;
+  ctx.fillRect(x - 4, y - 4, 8, 8);
 
-  // Draw label slightly *above* and styled
+  // Draw label slightly above
   if (name) {
     ctx.font = "12px sans-serif";
     ctx.fillStyle = color;
