@@ -4,6 +4,7 @@ import SensorTypes from "../data/SensorTypes";
 import { useSensorDeviceContext } from "../hooks/useSensorDeviceContext.ts";
 import type { Sensor } from "../utils/other/Types.tsx";
 import { useParams } from "react-router-dom";
+import useEventsContext from "../hooks/useEventsContext.ts";
 
 export default function AddSensorModal({
   setShowSensorModal,
@@ -13,6 +14,7 @@ export default function AddSensorModal({
   const { floorId } = useParams();
   const currentFloor = Number(floorId) || 1;
   const { setSensors } = useSensorDeviceContext();
+  const { addEvent } = useEventsContext();
 
   const [selectedSensorCategory, setSelectedSensorCategory] = useState("");
   const [selectedSensorType, setSelectedSensorType] = useState("");
@@ -43,6 +45,14 @@ export default function AddSensorModal({
     };
 
     setSensors((prev: Sensor[]) => [...prev, newSensor]);
+
+    addEvent({
+      nodeId: newSensor.id,
+      nodeType: "sensor",
+      eventType: "status",
+      floor: currentFloor,
+      message: `New sensor added: "${newSensor.name} - (${newSensor.connectivity})" of type "${newSensor.type}" and category " ${selectedSensorCategory}"`,
+    });
   };
 
   useEffect(() => {

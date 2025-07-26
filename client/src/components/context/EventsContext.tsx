@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { EventsContext, type SimulationEvent } from "./EventsContextDefs";
+import { EventsContext } from "./EventsContextDefs";
+import type { SimulationEvent } from "../utils/other/Types";
 
 // Wraps the EventsContext with state and functions
 export const EventsProvider = ({ children }: { children: React.ReactNode }) => {

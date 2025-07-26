@@ -4,6 +4,7 @@ import CanvasArea from "../components/ui/CanvasArea";
 import SidebarMenu from "../components/navigation/SidebarMenu.js";
 import type { Device, Sensor } from "../components/utils/other/Types.js";
 import useSensorDeviceContext from "../components/hooks/useSensorDeviceContext.js";
+import DispEventLogs from "../components/layout/DispEventLogs.js";
 
 export default function Dashboard() {
   const { floorId } = useParams();
@@ -61,31 +62,7 @@ export default function Dashboard() {
           setViewport={setViewport}
         />
       </div>
-      <div className="inline-flex flex-col gap-5 bg-slate-200 w-full min-w-20  p-4 h-100">
-        <h2 className="flex font-semibold text-sm text-slate-800 text-[2rem] underline">
-          Summary of Simulation & Activity
-        </h2>
-        <div className="grid grid-cols-3 gap-4 mx-8">
-          <div className="flex flex-col items-center bg-white p-4 rounded-lg">
-            <h3>Movement Detection</h3>
-          </div>
-          <div className="flex flex-col items-center bg-white p-4 rounded-lg">
-            <h3>Device Status Updates</h3>
-          </div>
-          <div className="flex flex-col items-center bg-white p-4 rounded-lg">
-            <h3>Sensor Status Updates</h3>
-          </div>
-          <div className="flex flex-col items-center bg-white p-4 rounded-lg">
-            <h3>Recent Events</h3>
-          </div>
-          <div className="flex flex-col items-center bg-white p-4 rounded-lg">
-            <h3>Connected Nodes</h3>
-          </div>
-          <div className="flex flex-col items-center bg-white p-4 rounded-lg">
-            <h3>Interfering Nodes</h3>
-          </div>
-        </div>
-      </div>
+      <DispEventLogs />
     </div>
   );
 }
