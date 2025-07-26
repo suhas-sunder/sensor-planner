@@ -61,7 +61,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       currentIndex: 0,
       direction: 1,
       blink: true,
-      color: "deeppink",
+      color: "#ff1493",
       animationSpeed: 140, // pixels/sec
     },
   ]);
