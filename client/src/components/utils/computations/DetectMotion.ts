@@ -17,7 +17,6 @@ export default function DetectMotion(
   people: Person[]
 ): void {
   const now = new Date().toISOString();
-
   const newActiveDetections: Record<string, DetectionLog> = {};
 
   for (const sensor of sensors) {
@@ -28,18 +27,36 @@ export default function DetectMotion(
     for (const person of people) {
       if (sensor.floor !== person.floor) continue;
 
-      const dx = sensor.x - person.currentPosition.x;
-      const dy = sensor.y - person.currentPosition.y;
+      if (
+        person.path.length < 2 ||
+        person.currentIndex < 0 ||
+        person.currentIndex >= person.path.length
+      )
+        continue;
+
+      const nextIndex = person.currentIndex + person.direction;
+      const reachedEnd = nextIndex < 0 || nextIndex >= person.path.length;
+
+      const start = person.path[person.currentIndex];
+      const end =
+        person.path[
+          reachedEnd ? person.currentIndex - person.direction : nextIndex
+        ];
+
+      const x = start.x + (end.x - start.x) * (person.progress ?? 0);
+      const y = start.y + (end.y - start.y) * (person.progress ?? 0);
+
+      const dx = sensor.x - x;
+      const dy = sensor.y - y;
       const distance = Math.hypot(dx, dy);
 
       const isInside = distance <= radius;
       const key = `${sensor.id}-${person.id}`;
 
       if (isInside) {
-        // Start or continue detection
         if (!activeDetections[key]) {
           console.log(
-            `[MOTION START] Sensor: ${sensor.name}, Person: ${person.id}, Time: ${now}`
+            `[MOTION START] Sensor: ${sensor.name}, Person: ${person.name}, Time: ${now}`
           );
           activeDetections[key] = {
             sensorId: sensor.id,
@@ -49,10 +66,9 @@ export default function DetectMotion(
         }
         newActiveDetections[key] = activeDetections[key];
       } else {
-        // Person moved out
         if (activeDetections[key]) {
           console.log(
-            `[MOTION END] Sensor: ${sensor.name}, Person: ${person.id}, Time: ${now}`
+            `[MOTION END] Sensor: ${sensor.name}, Person: ${person.name}, Time: ${now}`
           );
         }
       }

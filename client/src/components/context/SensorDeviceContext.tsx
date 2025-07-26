@@ -1,7 +1,11 @@
 import React, { useState } from "react";
-import { SensorContext, DeviceContext } from "./SensorDeviceContextDefs";
+import {
+  SensorContext,
+  DeviceContext,
+  PeopleContext,
+} from "./SensorDeviceContextDefs";
 import useLocalStorage from "../hooks/useLocalStorage";
-import type { Device, Sensor } from "../utils/other/Types";
+import type { Device, Person, Sensor } from "../utils/other/Types";
 
 export const SensorDeviceProvider = ({
   children,
@@ -10,6 +14,7 @@ export const SensorDeviceProvider = ({
 }) => {
   const [sensors, setSensors] = useState<Sensor[]>([]); // State to hold the list of sensors and its setter
   const [devices, setDevices] = useState<Device[]>([]); // State to hold the list of devices and its setter
+  const [people, setPeople] = useState<Person[]>([]); // State to hold the list of people and its setter
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null); // State to track the currently selected node ID
 
   // Optionally initialize or update user information in localStorage when component mounts
@@ -37,7 +42,9 @@ export const SensorDeviceProvider = ({
       value={{ sensors, setSensors, selectedNodeId, setSelectedNodeId }}
     >
       <DeviceContext.Provider value={{ devices, setDevices }}>
-        {children}
+        <PeopleContext.Provider value={{ people, setPeople }}>
+          {children}
+        </PeopleContext.Provider>
       </DeviceContext.Provider>
     </SensorContext.Provider>
   );
