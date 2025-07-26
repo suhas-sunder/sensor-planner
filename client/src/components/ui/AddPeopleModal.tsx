@@ -46,7 +46,6 @@ export default function AddPeopleModal({
       currentIndex: 0,
       direction: 1,
       animationSpeed: speed,
-      blink: true,
       color,
     };
 
@@ -142,16 +141,16 @@ export default function AddPeopleModal({
         {/* Color Picker with Manual Hex Input */}
         <div className="flex flex-col gap-2 mb-3 w-full">
           <label htmlFor="color" className="font-bold text-slate-700">
-            Person Color
+            Color
           </label>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full">
             <input
               id="color"
               name="color"
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="w-12 h-10 border-2 border-slate-500 rounded-md cursor-pointer"
+              className="w-12 h-10 border-2 p-[0.16em] border-slate-500 rounded-md cursor-pointer"
             />
             <input
               type="text"
@@ -166,7 +165,7 @@ export default function AddPeopleModal({
                 if (isValidHex)
                   setColor(value.startsWith("#") ? value : `#${value}`);
               }}
-              className="w-[6em] border-2 border-slate-500 p-1 rounded-md font-mono"
+              className="w-full border-2 border-slate-500 p-1 rounded-md font-mono"
               placeholder="#RRGGBB"
             />
           </div>
@@ -175,7 +174,7 @@ export default function AddPeopleModal({
         {/* Submit */}
         <button
           type="submit"
-          className="text-white bg-blue-600 p-2 rounded-md font-bold hover:brightness-110 hover:scale-105 transition-transform"
+          className="text-white bg-blue-600 p-2 rounded-md font-bold hover:brightness-110 hover:scale-105 transition-transform cursor-pointer"
         >
           Submit
         </button>

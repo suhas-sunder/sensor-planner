@@ -86,7 +86,6 @@ export type Person = {
   path: { x: number; y: number }[];
   currentIndex: number;
   direction: 1 | -1;
-  blink: boolean;
   color?: string;
   animationSpeed: number; // pixels per second
   progress?: number;

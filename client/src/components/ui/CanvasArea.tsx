@@ -37,6 +37,9 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   } | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // Create a reference to the canvas
+  const isDraggingRef = useRef(false);
+  const wasDraggingRef = useRef(false);
+
   const canvasSize = useCanvasSize(canvasRef);
   const pulsePhase = usePulseAnimation();
 
@@ -60,7 +63,6 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       ],
       currentIndex: 0,
       direction: 1,
-      blink: true,
       color: "#ff1493",
       animationSpeed: 140, // pixels/sec
     },
@@ -187,6 +189,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
         })
       );
 
+      isDraggingRef.current = true;
       setDraggingSensorId(targetSensor.id);
     } else if (targetDevice) {
       setDevices((prev) =>
@@ -262,6 +265,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
       console.log("Sensors: " + JSON.stringify(sensorsRef.current));
       console.log("Devices: " + JSON.stringify(devicesRef.current));
+      isDraggingRef.current = false;
     };
 
     window.addEventListener("mouseup", handleGlobalMouseUp);
@@ -319,13 +323,38 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     pulsePhase, // Redraw every animation frame to reflect pulse animation
   ]);
 
+  // Update isDraggingRef when draggingSensorId, draggingDeviceId, or isPanning changes
+  // This ensures all animations and rendering can be paused when dragging or panning
+  useEffect(() => {
+    isDraggingRef.current =
+      draggingSensorId !== null || draggingDeviceId !== null || isPanning;
+  }, [draggingSensorId, draggingDeviceId, isPanning]);
+
   useEffect(() => {
     let animationFrameId: number;
     let lastTimestamp: number | null = null;
 
     const updatePositions = (timestamp: number) => {
+      // If we were dragging before, but now we’re not, reset the timestamp
+      if (wasDraggingRef.current && !isDraggingRef.current) {
+        lastTimestamp = timestamp;
+        wasDraggingRef.current = false;
+        animationFrameId = requestAnimationFrame(updatePositions);
+        return;
+      }
+
+      // While dragging, set the flag and skip animation updates
+      if (isDraggingRef.current) {
+        wasDraggingRef.current = true;
+        animationFrameId = requestAnimationFrame(updatePositions);
+        return;
+      }
+
+      // Normal update
       if (lastTimestamp === null) lastTimestamp = timestamp;
+
       const delta = (timestamp - lastTimestamp) / 1000;
+
       lastTimestamp = timestamp;
 
       // Update people positions based on their paths
