@@ -50,6 +50,8 @@ export default function AddPeopleModal({
       color,
     };
 
+    console.log("newPerson: ", newPerson);
+
     setPeople((prev: Person[]) => [...prev, newPerson]);
   };
 
