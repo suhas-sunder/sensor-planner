@@ -20,6 +20,8 @@ export default function DetectInterferenceNodes(
 
   for (const s of sensors) {
     for (const d of devices) {
+      if (s.floor !== d.floor) continue;
+
       const dx = s.x - d.x;
       const dy = s.y - d.y;
       const distance = Math.hypot(dx, dy);

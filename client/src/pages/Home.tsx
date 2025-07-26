@@ -5,7 +5,7 @@ export default function Home() {
     <div className="w-full h-screen flex flex-col gap-12 items-center justify-center relative overflow-hidden">
       <div className="flex flex-col gap-8">
         <Link
-          to="dashboard"
+          to="dashboard/floor/4"
           className="grid relative grid-cols-4 gap-4 group cursor-pointer"
         >
           <div className="flex absolute left-1/2 -top-1/3 transform -translate-x-1/2  text-slate-400">
@@ -20,7 +20,7 @@ export default function Home() {
 
       <div className="flex flex-col gap-8">
         <Link
-          to="dashboard"
+          to="dashboard/floor/3"
           className="grid relative grid-cols-4 gap-4 group cursor-pointer"
         >
           <div className="flex absolute left-1/2 -top-1/3 transform -translate-x-1/2  text-slate-400">
@@ -34,7 +34,7 @@ export default function Home() {
       </div>
       <div className="flex flex-col gap-8">
         <Link
-          to="dashboard"
+          to="dashboard/floor/2"
           className="grid relative grid-cols-4 gap-4 group cursor-pointer"
         >
           <div className="flex absolute left-1/2 -top-1/3 transform -translate-x-1/2  text-slate-400">
@@ -48,7 +48,7 @@ export default function Home() {
       </div>
       <div className="flex flex-col gap-8">
         <Link
-          to="dashboard"
+          to="dashboard/floor/1"
           className="grid relative grid-cols-4 gap-4 group cursor-pointer"
         >
           <div className="flex absolute left-1/2 -top-1/3 transform -translate-x-1/2  text-slate-400">

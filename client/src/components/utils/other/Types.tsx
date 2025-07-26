@@ -16,6 +16,7 @@ export type Sensor = {
   connectivity: string[];
   connectedDeviceIds?: string[];
   interferenceIds?: string[];
+  floor: number;
 };
 
 export type Device = {
@@ -31,6 +32,7 @@ export type Device = {
   interferenceProtocols: string[];
   connectedSensorIds?: string[];
   interferenceIds?: string[];
+  floor: number;
 };
 
 type WallSide = "top" | "bottom" | "left" | "right";
@@ -43,6 +45,7 @@ type WallFeature = {
 
 export type Room = {
   id: string;
+  floor?: number;
   name: string;
   type: string;
   room_number: number | null;

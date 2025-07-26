@@ -3,12 +3,15 @@ import { v4 as uuidv4 } from "uuid";
 import DeviceTypes from "../data/DeviceTypes";
 import { useSensorDeviceContext } from "../hooks/useSensorDeviceContext.ts";
 import type { Device } from "../utils/other/Types.tsx";
+import { useParams } from "react-router-dom";
 
 export default function AddDeviceModal({
   setShowDeviceModal,
 }: {
   setShowDeviceModal: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const { floorId } = useParams(); // returns "1", "2", etc.
+  const currentFloor = Number(floorId) || 1; // fallback to floor 1 if undefined or invalid
   const { setDevices } = useSensorDeviceContext();
   const [selectedDeviceType, setSelectedDeviceType] = useState("");
   const [selectedDeviceCategory, setSelectedDeviceCategory] = useState("");
@@ -34,6 +37,7 @@ export default function AddDeviceModal({
 
     const submittedData: Device = {
       id: `${formData.get("device_category")}-${uuidv4()}`,
+      floor: currentFloor,
       type: String(formData.get("device_category")),
       label: String(formData.get("device_type")),
       name: String(formData.get("device_name")),

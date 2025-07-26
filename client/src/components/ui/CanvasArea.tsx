@@ -12,13 +12,19 @@ import useSensorDeviceContext from "../hooks/useSensorDeviceContext.js";
 import DispCursorPos from "../overlays/DispCursorPos.js";
 import DetectConnectedNodes from "../utils/computations/DetectConnectedNodes.js";
 import DetectInterferenceNodes from "../utils/computations/DetectInterferenceNodes.js";
+import { useParams } from "react-router-dom";
 const CanvasArea: React.FC<CanvasAreaProps> = ({
   selectedNodeId,
   onCanvasClick,
   viewport,
   setViewport,
 }) => {
+  const { floorId } = useParams(); // returns "1", "2", etc.
+  const currentFloor = Number(floorId) || 1; // fallback to floor 1 if undefined or invalid
   const { sensors, setSensors, devices, setDevices } = useSensorDeviceContext();
+  const floorSensors = sensors.filter((s) => s.floor === currentFloor);
+  const floorDevices = devices.filter((d) => d.floor === currentFloor);
+
   const [cursorPosition, setCursorPosition] = useState<{
     x: number;
     y: number;
@@ -107,13 +113,13 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     const mouseX = worldX;
     const mouseY = worldY;
 
-    const targetSensor = sensors.find(
+    const targetSensor = floorSensors.find(
       (sensor) =>
         Math.hypot(sensor.x - mouseX, sensor.y - mouseY) <=
         (sensor.sensor_rad || defaultSensorRadius)
     );
 
-    const targetDevice = devices.find(
+    const targetDevice = floorDevices.find(
       (device) =>
         Math.hypot(device.x - mouseX, device.y - mouseY) <=
         (device.device_rad || defaultSensorRadius)
@@ -132,6 +138,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
           return sensor;
         })
       );
+
       setDevices((prev) =>
         prev.map((device) => {
           if (
@@ -151,6 +158,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
           return device;
         })
       );
+
       setDraggingSensorId(targetSensor.id);
     } else if (targetDevice) {
       setDevices((prev) =>
@@ -165,6 +173,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
           return device;
         })
       );
+
       setSensors((prev) =>
         prev.map((sensor) => {
           if (
@@ -184,6 +193,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
           return sensor;
         })
       );
+
       setDraggingDeviceId(targetDevice.id);
     } else {
       setIsPanning(true);
@@ -230,7 +240,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
   }, [draggingDeviceId, draggingSensorId, setDevices, setSensors]);
 
-  // Re-draw the canvas whenever sensors, selection, viewport, size, or pulse phase changes
+  // Re-draw the canvas whenever floorSensors, selection, viewport, size, or pulse phase changes
   useEffect(() => {
     const canvas = canvasRef.current; // Get the canvas DOM element
     if (!canvas) return; // Exit early if not mounted yet
@@ -246,7 +256,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       DrawRoomWithWalls(ctx, room, viewport); // Draw all rooms
     });
 
-    devices.forEach((Device: Device) => {
+    floorDevices.forEach((Device: Device) => {
       DrawDevice(
         ctx, // Canvas drawing context
         Device, // The current Sensor to draw
@@ -257,7 +267,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     });
 
     // Loop over each Sensor and draw it
-    sensors.forEach((Sensor: Sensor) => {
+    floorSensors.forEach((Sensor: Sensor) => {
       DrawSensor(
         ctx, // Canvas drawing context
         Sensor, // The current Sensor to draw
@@ -267,8 +277,8 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       );
     });
   }, [
-    sensors, // Redraw if sensors added, removed, or updated
-    devices, // Redraw if devices added, removed, or updated
+    floorSensors, // Redraw if floorSensors added, removed, or updated
+    floorDevices, // Redraw if floorDevices added, removed, or updated
     selectedNodeId, // Redraw if node selection changes
     viewport, // Redraw when panning the canvas
     canvasSize, // Redraw when canvas is resized

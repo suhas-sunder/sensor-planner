@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { generateUsername } from "unique-username-generator";
 
+// Custom React hook for managing localStorage interactions for sensors, devices, and user info
 export default function useLocalStorage({
   actionType,
   sensors,
@@ -12,124 +13,126 @@ export default function useLocalStorage({
   setSelectedNodeId,
   selectedNodeId,
 }: LocalStorageData) {
-  const hasInitialized = useRef(false); // Track if the app has been initialized
+  const hasInitialized = useRef(false); // Ref to track if the app has completed its initial load
 
-  // Load on first app init
+  // Effect to load sensor and device data from localStorage on initial app load
   useEffect(() => {
     if (actionType === "init" && !hasInitialized.current) {
-      const storedSensors = localStorage.getItem("sensorData");
-      const storedDevices = localStorage.getItem("deviceData");
+      // Only run on initial load
+      const storedSensors = localStorage.getItem("sensorData"); // Retrieve sensors from localStorage
+      const storedDevices = localStorage.getItem("deviceData"); // Retrieve devices from localStorage
 
       if (storedSensors && setSensors) {
+        // If sensors exist and setter is provided
         try {
-          setSensors(JSON.parse(storedSensors));
+          setSensors(JSON.parse(storedSensors)); // Parse and set sensors state
         } catch {
-          console.error("Failed to parse sensor data");
+          console.error("Failed to parse sensor data"); // Log error if parsing fails
         }
       }
 
       if (storedDevices && setDevices) {
+        // If devices exist and setter is provided
         try {
-          setDevices(JSON.parse(storedDevices));
+          setDevices(JSON.parse(storedDevices)); // Parse and set devices state
         } catch {
-          console.error("Failed to parse device data");
+          console.error("Failed to parse device data"); // Log error if parsing fails
         }
       }
     }
 
     const timer = setTimeout(() => {
-      hasInitialized.current = true;
+      hasInitialized.current = true; // Mark initialization as complete after short delay
     }, 100);
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(timer); // Cleanup timer on unmount or dependency change
     };
   }, [actionType, setSensors, setDevices]);
 
-  // Sync changes after init
+  // Effect to sync sensor and device data to localStorage after initialization
   useEffect(() => {
     if (actionType === "sync" && hasInitialized.current) {
+      // Only sync after initialization
       if (sensors) {
-        localStorage.setItem("sensorData", JSON.stringify(sensors));
+        localStorage.setItem("sensorData", JSON.stringify(sensors)); // Store sensors in localStorage
       }
       if (devices) {
-        localStorage.setItem("deviceData", JSON.stringify(devices));
+        localStorage.setItem("deviceData", JSON.stringify(devices)); // Store devices in localStorage
       }
     }
   }, [actionType, sensors, devices]);
 
-  // User ID generation
+  // Effect to load sensors, devices, and selected node ID from localStorage on initial load
   useEffect(() => {
-    // Only run this effect once when the app initializes
     if (actionType === "init" && !hasInitialized.current) {
-      // Load data from localStorage
-      const storedSensors = localStorage.getItem("sensorData");
-      const storedDevices = localStorage.getItem("deviceData");
-      const storedSelectedNodeId = localStorage.getItem("selectedNodeId");
+      // Only run on initial load
+      const storedSensors = localStorage.getItem("sensorData"); // Retrieve sensors from localStorage
+      const storedDevices = localStorage.getItem("deviceData"); // Retrieve devices from localStorage
+      const storedSelectedNodeId = localStorage.getItem("selectedNodeId"); // Retrieve selected node ID
 
-      // Parse and set data if available
       if (storedSensors && setSensors) {
+        // If sensors exist and setter is provided
         try {
-          setSensors(JSON.parse(storedSensors));
+          setSensors(JSON.parse(storedSensors)); // Parse and set sensors state
         } catch {
-          console.error("Failed to parse sensor data");
+          console.error("Failed to parse sensor data"); // Log error if parsing fails
         }
       }
 
-      // Parse and set device data if available
       if (storedDevices && setDevices) {
+        // If devices exist and setter is provided
         try {
-          setDevices(JSON.parse(storedDevices));
+          setDevices(JSON.parse(storedDevices)); // Parse and set devices state
         } catch {
-          console.error("Failed to parse device data");
+          console.error("Failed to parse device data"); // Log error if parsing fails
         }
       }
 
-      // Set selected node if available
       if (storedSelectedNodeId && setSelectedNodeId) {
-        setSelectedNodeId(storedSelectedNodeId);
+        // If selected node ID exists and setter is provided
+        setSelectedNodeId(storedSelectedNodeId); // Set selected node ID state
       }
     }
 
-    // Set hasInitialized to true after a short delay to ensure the initial load is complete
-    // This prevents immediate sync issues on first load causing local storage to be overwritten by empty state
     const timer = setTimeout(() => {
-      hasInitialized.current = true;
+      hasInitialized.current = true; // Mark initialization as complete after short delay
     }, 100);
 
-    // Cleanup function to clear the timer so it doesn't leak memory
     return () => {
-      clearTimeout(timer);
+      clearTimeout(timer); // Cleanup timer on unmount or dependency change
     };
   }, [actionType, setSensors, setDevices, setSelectedNodeId]);
 
-  // Sync changes after init
+  // Effect to sync sensors, devices, and selected node ID to localStorage after initialization
   useEffect(() => {
-    // Only sync if the app has been initialized and actionType is sync
     if (actionType === "sync" && hasInitialized.current) {
+      // Only sync after initialization
       if (sensors) {
-        localStorage.setItem("sensorData", JSON.stringify(sensors));
+        localStorage.setItem("sensorData", JSON.stringify(sensors)); // Store sensors in localStorage
       }
       if (devices) {
-        localStorage.setItem("deviceData", JSON.stringify(devices));
+        localStorage.setItem("deviceData", JSON.stringify(devices)); // Store devices in localStorage
       }
 
       if (selectedNodeId || selectedNodeId === null) {
-        localStorage.setItem("selectedNodeId", selectedNodeId || "");
+        // Store selected node ID (even if null)
+        localStorage.setItem("selectedNodeId", selectedNodeId || ""); // Store selected node ID in localStorage
       }
     }
   }, [actionType, sensors, devices, selectedNodeId]);
 
-  // User ID generation
+  // Effect to generate and store a user ID and username if not already present in localStorage
   useEffect(() => {
     if (actionType === "user-update") {
-      const userId = localStorage.getItem("userId");
+      // Only run when user info needs to be updated
+      const userId = localStorage.getItem("userId"); // Check if userId exists
 
-      // If userId does not exist, generate a new one
       if (!userId) {
-        const userName = generateUsername("-", 2, 20, "University Student");
-        localStorage.setItem("userId", `user-${uuidv4()}`);
-        localStorage.setItem("userName", userName);
+        // If userId does not exist
+        const userName = generateUsername("-", 2, 20, "University Student"); // Generate a random username
+        localStorage.setItem("userId", `user-${uuidv4()}`); // Generate and store a new userId
+        localStorage.setItem("userName", userName); // Store generated username
       }
     }
   }, [actionType]);

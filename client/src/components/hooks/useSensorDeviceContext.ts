@@ -4,13 +4,12 @@ import {
   DeviceContext,
 } from "../context/SensorDeviceContextDefs.ts";
 
-export const useSensorContext = () => useContext(SensorContext);
-export const useDeviceContext = () => useContext(DeviceContext);
-
+// Custom hook that combines both Sensor and Device contexts for easier access
 export const useSensorDeviceContext = () => {
-  const sensorContext = useSensorContext();
-  const deviceContext = useDeviceContext();
+  const sensorContext = useContext(SensorContext); // Get the SensorContext using the custom hook
+  const deviceContext = useContext(DeviceContext); // Get the DeviceContext using the custom hook
 
+  // Ensure that both contexts are available, otherwise throw an error
   if (!sensorContext || !deviceContext) {
     throw new Error(
       "useSensorDeviceContext must be used within a SensorDeviceProvider"

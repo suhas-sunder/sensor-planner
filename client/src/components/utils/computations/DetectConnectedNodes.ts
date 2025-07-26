@@ -11,6 +11,8 @@ export default function DetectConnectedNodes(
     const connectedDeviceIds: string[] = [];
 
     for (const device of devices) {
+      if (sensor.floor !== device.floor) continue;
+
       const dx = sensor.x - device.x;
       const dy = sensor.y - device.y;
       const distance = Math.hypot(dx, dy);
@@ -36,6 +38,8 @@ export default function DetectConnectedNodes(
     const connectedSensorIds: string[] = [];
 
     for (const sensor of sensors) {
+      if (sensor.floor !== device.floor) continue;
+
       const dx = sensor.x - device.x;
       const dy = sensor.y - device.y;
       const distance = Math.hypot(dx, dy);
