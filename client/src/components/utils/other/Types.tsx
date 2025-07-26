@@ -95,11 +95,11 @@ export type Person = {
   progress?: number;
 };
 
-type SimulationEvent = {
+export type SimulationEvent = {
   id: string;
   floor: number;
   nodeId: string;
-  nodeType: "sensor" | "device";
+  nodeType: "sensor" | "device" | "person";
   eventType: "connectivity" | "interference" | "motion" | "status";
   timestamp: number;
   message: string; // Human-readable summary

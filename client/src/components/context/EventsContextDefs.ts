@@ -1,15 +1,5 @@
 import { createContext } from "react";
-
-// Defines the shape of a simulation event
-export type SimulationEvent = {
-  id: string;
-  floor: number;
-  nodeId: string;
-  nodeType: "sensor" | "device";
-  eventType: "connectivity" | "interference" | "motion" | "status";
-  timestamp: number;
-  message: string;
-};
+import type { SimulationEvent } from "../utils/other/Types";
 
 // Defines the shape of the context for managing simulation events
 export interface EventsContextType {

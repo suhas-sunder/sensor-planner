@@ -14,6 +14,8 @@ import DetectConnectedNodes from "../utils/computations/DetectConnectedNodes.js"
 import DetectInterferenceNodes from "../utils/computations/DetectInterferenceNodes.js";
 import { useParams } from "react-router-dom";
 import DrawPeople from "../utils/drawings/DrawPeople.js";
+import DetectMotion from "../utils/computations/DetectMotion.js";
+import useEventsContext from "../hooks/useEventsContext.js";
 const CanvasArea: React.FC<CanvasAreaProps> = ({
   selectedNodeId,
   onCanvasClick,
@@ -24,6 +26,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   const currentFloor = Number(floorId) || 1; // fallback to floor 1 if undefined or invalid
   const { sensors, setSensors, devices, setDevices, people, setPeople } =
     useSensorDeviceContext();
+  const { addEvent } = useEventsContext();
   const floorSensors = sensors.filter((s) => s.floor === currentFloor);
   const floorDevices = devices.filter((d) => d.floor === currentFloor);
 
@@ -33,6 +36,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   } | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // Create a reference to the canvas
+  const peopleRef = useRef(people); // Store people in a ref to avoid re-renders
   const isDraggingRef = useRef(false);
   const wasDraggingRef = useRef(false);
 
@@ -46,6 +50,8 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   const defaultSensorRadius = 20;
 
   const floorPeople = people.filter((p) => p.floor === currentFloor);
+  const sensorsRef = useRef(sensors);
+  const devicesRef = useRef(devices);
 
   // Handle canvas click
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -209,10 +215,12 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     }
   };
 
+  useEffect(() => {
+    peopleRef.current = people;
+  }, [people]);
+
   // Handle mouse up
   // Add at the top
-  const sensorsRef = useRef(sensors);
-  const devicesRef = useRef(devices);
   useEffect(() => {
     sensorsRef.current = sensors;
     devicesRef.current = devices;
@@ -336,8 +344,6 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
       // Update people positions based on their paths
       setPeople((prevPeople) => {
-        const now = new Date().toISOString();
-
         return prevPeople.map((person) => {
           if (person.floor !== currentFloor || person.path.length < 2)
             return person;
@@ -380,42 +386,8 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
           const reached = newProgress >= 1;
           const clampedProgress = reached ? 1 : newProgress;
 
-          const updatedX = start.x + dx * clampedProgress;
-          const updatedY = start.y + dy * clampedProgress;
-
-          // 🔍 MOTION DETECTION
-          for (const sensor of sensorsRef.current) {
-            if (
-              (sensor.type === "motion" || sensor.type === "presence") &&
-              sensor.floor === person.floor
-            ) {
-              const sx = sensor.x;
-              const sy = sensor.y;
-              const sr = sensor.sensor_rad ?? 150;
-              const dist = Math.hypot(updatedX - sx, updatedY - sy);
-              const inRange = dist <= sr;
-
-              const key = `${sensor.id}-${person.id}`;
-              if (inRange) {
-                if (!(window as any)._motionLogActive?.[key]) {
-                  console.log(
-                    `[MOTION START] ${sensor.name} saw ${person.id} at ${now}`
-                  );
-                  (window as any)._motionLogActive = {
-                    ...(window as any)._motionLogActive,
-                    [key]: now,
-                  };
-                }
-              } else {
-                if ((window as any)._motionLogActive?.[key]) {
-                  console.log(
-                    `[MOTION END] ${sensor.name} lost ${person.id} at ${now}`
-                  );
-                  delete (window as any)._motionLogActive[key];
-                }
-              }
-            }
-          }
+          // MOTION DETECTION
+          DetectMotion(sensorsRef.current, peopleRef.current, addEvent);
 
           return {
             ...person,

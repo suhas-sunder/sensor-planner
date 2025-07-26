@@ -4,6 +4,7 @@ import DeviceTypes from "../data/DeviceTypes";
 import { useSensorDeviceContext } from "../hooks/useSensorDeviceContext.ts";
 import type { Device } from "../utils/other/Types.tsx";
 import { useParams } from "react-router-dom";
+import useEventsContext from "../hooks/useEventsContext.ts";
 
 export default function AddDeviceModal({
   setShowDeviceModal,
@@ -13,6 +14,7 @@ export default function AddDeviceModal({
   const { floorId } = useParams(); // returns "1", "2", etc.
   const currentFloor = Number(floorId) || 1; // fallback to floor 1 if undefined or invalid
   const { setDevices } = useSensorDeviceContext();
+  const { addEvent } = useEventsContext();
   const [selectedDeviceType, setSelectedDeviceType] = useState("");
   const [selectedDeviceCategory, setSelectedDeviceCategory] = useState("");
   const [deviceName, setDeviceName] = useState("");
@@ -50,6 +52,14 @@ export default function AddDeviceModal({
     };
 
     setDevices((prev: Device[]) => [...prev, submittedData]);
+
+    addEvent({
+      nodeId: submittedData.id,
+      nodeType: "device",
+      floor: currentFloor,
+      eventType: "status",
+      message: `New device added: "${submittedData.name} - (${submittedData.connectivity})" of type "${submittedData.label}" and category " ${submittedData.type}"`,
+    });
   };
 
   useEffect(() => {

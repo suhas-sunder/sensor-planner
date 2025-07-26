@@ -1,5 +1,4 @@
-// utils/computations/DetectMotion.ts
-import type { Sensor, Person } from "../other/Types";
+import type { Sensor, Person, SimulationEvent } from "../other/Types";
 
 const defaultSensorRadius = 150;
 
@@ -12,11 +11,15 @@ type DetectionLog = {
 
 let activeDetections: Record<string, DetectionLog> = {};
 
+/**
+ * Detects motion between people and sensors and triggers event logging via callback.
+ */
 export default function DetectMotion(
   sensors: Sensor[],
-  people: Person[]
+  people: Person[],
+  addEvent: (event: Omit<SimulationEvent, "id" | "timestamp">) => void
 ): void {
-  const now = new Date().toISOString();
+  const now = new Date();
   const newActiveDetections: Record<string, DetectionLog> = {};
 
   for (const sensor of sensors) {
@@ -55,21 +58,35 @@ export default function DetectMotion(
 
       if (isInside) {
         if (!activeDetections[key]) {
-          console.log(
-            `[MOTION START] Sensor: ${sensor.name}, Person: ${person.name}, Time: ${now}`
-          );
+          const message = `Motion START near "${sensor.name}" by "${person.name}"`;
+
+          addEvent({
+            nodeId: sensor.id,
+            nodeType: "sensor",
+            floor: sensor.floor,
+            eventType: "motion",
+            message,
+          });
+
           activeDetections[key] = {
             sensorId: sensor.id,
             personId: person.id,
-            startTime: now,
+            startTime: now.toISOString(),
           };
         }
+
         newActiveDetections[key] = activeDetections[key];
       } else {
         if (activeDetections[key]) {
-          console.log(
-            `[MOTION END] Sensor: ${sensor.name}, Person: ${person.name}, Time: ${now}`
-          );
+          const message = `Motion END near "${sensor.name}" from "${person.name}"`;
+
+          addEvent({
+            nodeId: sensor.id,
+            nodeType: "sensor",
+            floor: sensor.floor,
+            eventType: "motion",
+            message,
+          });
         }
       }
     }

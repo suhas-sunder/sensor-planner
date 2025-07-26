@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useSensorDeviceContext } from "../hooks/useSensorDeviceContext";
 import type { Person } from "../utils/other/Types";
 import { useParams } from "react-router-dom";
+import useEventsContext from "../hooks/useEventsContext";
 
 export default function AddPeopleModal({
   setShowPeopleModal,
@@ -13,6 +14,8 @@ export default function AddPeopleModal({
   const currentFloor = Number(floorId) || 1;
 
   const { setPeople } = useSensorDeviceContext();
+  const { addEvent } = useEventsContext();
+
   const [name, setName] = useState(`Person - ${uuidv4().slice(0, 8)}`);
   const [speed, setSpeed] = useState(100);
   const [color, setColor] = useState("#FF1493"); // Hex code for deeppink
@@ -65,6 +68,14 @@ export default function AddPeopleModal({
     };
 
     setPeople((prev: Person[]) => [...prev, newPerson]);
+
+    addEvent({
+      nodeId: newPerson.id,
+      nodeType: "person",
+      eventType: "motion",
+      floor: currentFloor,
+      message: `New animated person added: "${newPerson.name}" with speed "${newPerson.animationSpeed}px/sec"`,
+    });
   };
 
   return (
