@@ -78,3 +78,15 @@ export type LocalStorageData = {
 export type CursorPosition = {
   cursorPosition: { x: number; y: number } | null;
 };
+
+export type Person = {
+  id: string;
+  floor: number;
+  path: { x: number; y: number }[];
+  currentIndex: number;
+  direction: 1 | -1;
+  blink: boolean;
+  color?: string;
+  currentPosition: { x: number; y: number };
+  animationSpeed: number; // pixels per second
+};
