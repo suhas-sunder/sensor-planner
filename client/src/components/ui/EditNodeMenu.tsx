@@ -14,18 +14,17 @@ export default function EditNodeMenu() {
   const sensorTypes = useMemo(() => SensorTypes(), []);
   const deviceTypes = useMemo(() => DeviceTypes(), []);
 
-  const selectedSensor = sensors.find((sensor) => sensor.id === selectedNodeId);
-  const selectedDevice = devices.find((device) => device.id === selectedNodeId);
+  const selectedSensor = sensors.find((s) => s.id === selectedNodeId);
+  const selectedDevice = devices.find((d) => d.id === selectedNodeId);
   const node = selectedSensor || selectedDevice;
 
   const [editableNode, setEditableNode] = useState<Sensor | Device | null>(
     null
   );
+  const [selectedSensorCategory, setSelectedSensorCategory] = useState("");
   const [selectedSensorType, setSelectedSensorType] = useState("");
   const [selectedDeviceCategory, setSelectedDeviceCategory] = useState("");
   const [selectedDeviceLabel, setSelectedDeviceLabel] = useState("");
-
-  // Store pending update for context synchronization
   const [pendingUpdate, setPendingUpdate] = useState<Sensor | Device | null>(
     null
   );
@@ -39,66 +38,65 @@ export default function EditNodeMenu() {
     setEditableNode({ ...node });
 
     if ("sensor_rad" in node) {
+      setSelectedSensorCategory(
+        sensorTypes.find((s) => s.type === node.type)?.category || ""
+      );
       setSelectedSensorType(node.type);
     } else {
       setSelectedDeviceCategory(node.type);
       setSelectedDeviceLabel(node.label);
     }
-  }, [node]);
+  }, [node, sensorTypes]);
 
   useEffect(() => {
     if (!pendingUpdate) return;
 
-    // Apply the update
     if ("sensor_rad" in pendingUpdate) {
       const updatedSensors = sensors.map((s) =>
         s.id === pendingUpdate.id ? pendingUpdate : s
       );
-
-      const {
-        updatedSensors: sensorsWithConnections,
-        updatedDevices: devicesWithConnections,
-      } = DetectConnectedNodes(updatedSensors, devices);
-
-      const { updatedSensors: finalSensors, updatedDevices: finalDevices } =
-        DetectInterferenceNodes(sensorsWithConnections, devicesWithConnections);
-
-      setSensors(finalSensors);
-      setDevices(finalDevices);
+      const { updatedSensors: s1, updatedDevices: d1 } = DetectConnectedNodes(
+        updatedSensors,
+        devices
+      );
+      const { updatedSensors: s2, updatedDevices: d2 } =
+        DetectInterferenceNodes(s1, d1);
+      setSensors(s2);
+      setDevices(d2);
     } else {
       const updatedDevices = devices.map((d) =>
         d.id === pendingUpdate.id ? pendingUpdate : d
       );
-
-      const {
-        updatedSensors: sensorsWithConnections,
-        updatedDevices: devicesWithConnections,
-      } = DetectConnectedNodes(sensors, updatedDevices);
-
-      const { updatedSensors: finalSensors, updatedDevices: finalDevices } =
-        DetectInterferenceNodes(sensorsWithConnections, devicesWithConnections);
-
-      setSensors(finalSensors);
-      setDevices(finalDevices);
+      const { updatedSensors: s1, updatedDevices: d1 } = DetectConnectedNodes(
+        sensors,
+        updatedDevices
+      );
+      const { updatedSensors: s2, updatedDevices: d2 } =
+        DetectInterferenceNodes(s1, d1);
+      setSensors(s2);
+      setDevices(d2);
     }
 
     setPendingUpdate(null);
   }, [pendingUpdate]);
+
+  const availableSensorTypes = useMemo(() => {
+    return sensorTypes.filter((s) => s.category === selectedSensorCategory);
+  }, [sensorTypes, selectedSensorCategory]);
 
   const availableConnectivityOptions = useMemo(() => {
     if (!editableNode) return [];
 
     if ("sensor_rad" in editableNode) {
       return (
-        sensorTypes.find((sensor) => sensor.type === selectedSensorType)
-          ?.connectivity ?? []
+        sensorTypes.find((s) => s.type === selectedSensorType)?.connectivity ??
+        []
       );
     } else {
       return (
         deviceTypes.find(
-          (device) =>
-            device.type === selectedDeviceCategory &&
-            device.label === selectedDeviceLabel
+          (d) =>
+            d.type === selectedDeviceCategory && d.label === selectedDeviceLabel
         )?.connectivity ?? []
       );
     }
@@ -107,14 +105,15 @@ export default function EditNodeMenu() {
     sensorTypes,
     deviceTypes,
     selectedSensorType,
+    selectedSensorCategory,
     selectedDeviceCategory,
     selectedDeviceLabel,
   ]);
 
   const availableDeviceLabels = useMemo(() => {
     return deviceTypes
-      .filter((device) => device.type === selectedDeviceCategory)
-      .map((device) => device.label);
+      .filter((d) => d.type === selectedDeviceCategory)
+      .map((d) => d.label);
   }, [deviceTypes, selectedDeviceCategory]);
 
   const handleChange = <K extends keyof (Sensor & Device)>(
@@ -129,18 +128,37 @@ export default function EditNodeMenu() {
     });
   };
 
-  const handleSensorTypeChange = (newType: string) => {
-    setSelectedSensorType(newType);
-    const newConnectivity =
-      sensorTypes.find((sensor) => sensor.type === newType)?.connectivity[0] ||
-      "";
+  const handleSensorCategoryChange = (category: string) => {
+    const firstMatch = sensorTypes.find((s) => s.category === category);
+    if (!firstMatch) return;
+
+    setSelectedSensorCategory(category);
+    setSelectedSensorType(firstMatch.type);
 
     setEditableNode((prev) => {
       if (!prev || !("sensor_rad" in prev)) return prev;
       const updated = {
         ...prev,
-        type: newType,
-        connectivity: [newConnectivity],
+        type: firstMatch.type,
+        connectivity: [firstMatch.connectivity[0] ?? ""],
+      };
+      setPendingUpdate(updated);
+      return updated;
+    });
+  };
+
+  const handleSensorTypeChange = (type: string) => {
+    setSelectedSensorType(type);
+
+    const selected = sensorTypes.find((s) => s.type === type);
+    if (!selected) return;
+
+    setEditableNode((prev) => {
+      if (!prev || !("sensor_rad" in prev)) return prev;
+      const updated = {
+        ...prev,
+        type,
+        connectivity: [selected.connectivity[0] ?? ""],
       };
       setPendingUpdate(updated);
       return updated;
@@ -149,16 +167,13 @@ export default function EditNodeMenu() {
 
   const handleDeviceCategoryChange = (category: string) => {
     setSelectedDeviceCategory(category);
-
     const firstLabel =
-      deviceTypes.find((device) => device.type === category)?.label || "";
-
+      deviceTypes.find((d) => d.type === category)?.label ?? "";
     setSelectedDeviceLabel(firstLabel);
 
-    const newConnectivity =
-      deviceTypes.find(
-        (device) => device.type === category && device.label === firstLabel
-      )?.connectivity[0] || "";
+    const newConn =
+      deviceTypes.find((d) => d.type === category && d.label === firstLabel)
+        ?.connectivity[0] ?? "";
 
     setEditableNode((prev) => {
       if (!prev || !("device_rad" in prev)) return prev;
@@ -166,7 +181,7 @@ export default function EditNodeMenu() {
         ...prev,
         type: category,
         label: firstLabel,
-        connectivity: [newConnectivity],
+        connectivity: [newConn],
       };
       setPendingUpdate(updated);
       return updated;
@@ -175,19 +190,17 @@ export default function EditNodeMenu() {
 
   const handleDeviceLabelChange = (label: string) => {
     setSelectedDeviceLabel(label);
-
-    const newConnectivity =
+    const newConn =
       deviceTypes.find(
-        (device) =>
-          device.type === selectedDeviceCategory && device.label === label
-      )?.connectivity[0] || "";
+        (d) => d.type === selectedDeviceCategory && d.label === label
+      )?.connectivity[0] ?? "";
 
     setEditableNode((prev) => {
       if (!prev || !("device_rad" in prev)) return prev;
       const updated = {
         ...prev,
         label,
-        connectivity: [newConnectivity],
+        connectivity: [newConn],
       };
       setPendingUpdate(updated);
       return updated;
@@ -198,13 +211,9 @@ export default function EditNodeMenu() {
     if (!editableNode) return;
 
     if ("sensor_rad" in editableNode) {
-      setSensors((prev) =>
-        prev.filter((sensor) => sensor.id !== editableNode.id)
-      );
+      setSensors((prev) => prev.filter((s) => s.id !== editableNode.id));
     } else {
-      setDevices((prev) =>
-        prev.filter((device) => device.id !== editableNode.id)
-      );
+      setDevices((prev) => prev.filter((d) => d.id !== editableNode.id));
     }
   };
 
@@ -250,15 +259,32 @@ export default function EditNodeMenu() {
       {"sensor_rad" in editableNode && (
         <>
           <div className="flex flex-col gap-2 text-sm">
+            Sensor Category:{" "}
+            <select
+              className="bg-slate-600 p-1 rounded w-full"
+              value={selectedSensorCategory}
+              onChange={(e) => handleSensorCategoryChange(e.target.value)}
+            >
+              {[...new Set(sensorTypes.map((s) => s.category))].map(
+                (category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                )
+              )}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-2 text-sm">
             Sensor Type:{" "}
             <select
               className="bg-slate-600 p-1 rounded w-full"
               value={selectedSensorType}
               onChange={(e) => handleSensorTypeChange(e.target.value)}
             >
-              {sensorTypes.map((sensor) => (
-                <option key={sensor.type} value={sensor.type}>
-                  {sensor.label}
+              {availableSensorTypes.map((s) => (
+                <option key={s.type} value={s.type}>
+                  {s.label}
                 </option>
               ))}
             </select>
@@ -267,7 +293,7 @@ export default function EditNodeMenu() {
           <div className="flex flex-col gap-2 justify-center items-center text-sm">
             Sensor Radius:{" "}
             <input
-              className="bg-slate-600 p-1 rounded w-20"
+              className="bg-slate-600 p-1 rounded w-full"
               type="number"
               value={editableNode.sensor_rad}
               onChange={(e) =>
@@ -283,9 +309,9 @@ export default function EditNodeMenu() {
               value={editableNode.connectivity[0] || ""}
               onChange={(e) => handleChange("connectivity", [e.target.value])}
             >
-              {availableConnectivityOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
+              {availableConnectivityOptions.map((c) => (
+                <option key={c} value={c}>
+                  {c}
                 </option>
               ))}
             </select>
@@ -328,7 +354,7 @@ export default function EditNodeMenu() {
           <div className="flex flex-col gap-2 justify-center items-center text-sm">
             Device Radius:{" "}
             <input
-              className="bg-slate-600 p-1 rounded w-20"
+              className="bg-slate-600 p-1 rounded w-full"
               type="number"
               value={editableNode.device_rad}
               onChange={(e) =>

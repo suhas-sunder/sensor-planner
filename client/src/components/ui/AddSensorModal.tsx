@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import SensorTypes from "../data/SensorTypes";
-import useSensorDeviceContext from "../hooks/useSensorDeviceContext";
-import type { Sensor } from "../utils/other/Types";
+import { useSensorDeviceContext } from "../hooks/useSensorDeviceContext.ts";
+import type { Sensor } from "../utils/other/Types.tsx";
 import { useParams } from "react-router-dom";
 
 export default function AddSensorModal({
@@ -10,184 +10,221 @@ export default function AddSensorModal({
 }: {
   setShowSensorModal: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const { floorId } = useParams(); // returns "1", "2", etc.
-  const currentFloor = Number(floorId) || 1; // fallback to floor 1 if undefined or invalid
+  const { floorId } = useParams();
+  const currentFloor = Number(floorId) || 1;
   const { setSensors } = useSensorDeviceContext();
 
-  const [selectedSensorType, setSelectedSensorType] = useState("motion");
-  const [sensorName, setSensorName] = useState(
-    `Motion Sensor - ${uuidv4().slice(0, 8)}`
-  );
-  const [selectedConnectivityType, setSelectedConnectivityType] =
-    useState("Wi-Fi 2.4GHz");
-  const [radius, setRadius] = useState("30");
-  const [xPosition, setXPosition] = useState("100");
-  const [yPosition, setYPosition] = useState("100");
+  const [selectedSensorCategory, setSelectedSensorCategory] = useState("");
+  const [selectedSensorType, setSelectedSensorType] = useState("");
+  const [sensorName, setSensorName] = useState("");
+  const [selectedConnectivityType, setSelectedConnectivityType] = useState("");
+  const [radius, setRadius] = useState(150);
+  const [xPosition, setXPosition] = useState(100);
+  const [yPosition, setYPosition] = useState(100);
+
+  const allSensors = SensorTypes();
+  const selectedSensor = allSensors.find((s) => s.label === selectedSensorType);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setShowSensorModal(false);
 
-    const formData = new FormData(e.currentTarget);
-
-    const submittedData: Sensor = {
-      id: `${formData.get("sensor_type")}-${uuidv4()}`,
+    const newSensor: Sensor = {
+      id: `${selectedSensorCategory}-${uuidv4()}`,
       floor: currentFloor,
-      type: String(formData.get("sensor_type") ?? ""),
-      name: String(formData.get("sensor_name") ?? ""),
-      x: Number(formData.get("x_position")),
-      y: Number(formData.get("y_position")),
-      connectivity: [String(formData.get("connectivity_type") ?? "")],
-      sensor_rad: Number(formData.get("sensor_radius")),
+      type: selectedSensor?.type ?? "",
+      name: sensorName,
+      x: xPosition,
+      y: yPosition,
+      connectivity: [selectedConnectivityType],
+      sensor_rad: radius,
+      connectedDeviceIds: [],
+      interferenceIds: [],
     };
 
-    setSensors((prev: Sensor[]) => [...prev, submittedData]);
-
-    console.log(submittedData);
+    setSensors((prev: Sensor[]) => [...prev, newSensor]);
   };
 
-  return (
-    <>
-      <form
-        onSubmit={handleSubmit}
-        className="fixed inset-0 z-50 flex items-center justify-center"
-      >
-        <button
-          type="button"
-          onClick={() => setShowSensorModal(false)}
-          className="absolute inset-0 bg-slate-900 opacity-10 pointer-events-auto cursor-pointer"
-        />
-        <div className="flex flex-col  gap-3 relative min-w-1/4 min-h-1/4 bg-white text-black p-6 rounded-lg shadow-md z-10 pointer-events-auto justify-center  items-center ">
-          <h2 className="text-xl font-bold text-slate-700">Add New Sensor</h2>
+  useEffect(() => {
+    if (allSensors.length === 0) return;
 
-          <div className="flex flex-col gap-2 mb-3 w-full max-w-70">
-            <label
-              htmlFor="sensor-type"
-              className="font-bold text-slate-700 cursor-pointer"
-            >
-              Sensor Type
-            </label>
-            <select
-              id="sensor-type"
-              name="sensor_type"
-              value={selectedSensorType}
-              onChange={(e) => {
-                const selected = SensorTypes().find(
-                  (sensor) => sensor.type === e.target.value
-                );
-                if (selected) {
-                  setSelectedSensorType(selected.type);
-                  setSensorName(`${selected.label} - ${uuidv4().slice(0, 8)}`);
-                }
-              }}
-              className="flex border-2 border-slate-500 w-full p-2 rounded-md cursor-pointer"
-            >
-              {SensorTypes().map((sensor) => (
-                <option key={sensor.type} value={sensor.type}>
-                  {sensor.label}
+    const first = allSensors[0];
+    setSelectedSensorCategory(first.category);
+    setSelectedSensorType(first.label);
+    setSensorName(`${first.label} - ${uuidv4().slice(0, 8)}`);
+    setSelectedConnectivityType(first.connectivity[0] ?? "");
+  }, []);
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="fixed inset-0 z-50 flex items-center justify-center"
+    >
+      <button
+        type="button"
+        onClick={() => setShowSensorModal(false)}
+        className="absolute inset-0 bg-slate-900 opacity-10 cursor-pointer"
+      />
+      <div className="flex flex-col gap-3 relative min-w-1/4 bg-white text-black p-6 rounded-lg shadow-md z-10">
+        <h2 className="text-xl font-bold text-slate-700">Add New Sensor</h2>
+
+        {/* Category */}
+        <div className="flex flex-col gap-2 mb-3 w-full">
+          <label htmlFor="sensor-category" className="font-bold text-slate-700">
+            Sensor Category
+          </label>
+          <select
+            id="sensor-category"
+            name="sensor_category"
+            value={selectedSensorCategory}
+            onChange={(e) => {
+              const selectedCategory = e.target.value;
+              setSelectedSensorCategory(selectedCategory);
+
+              const firstMatch = allSensors.find(
+                (s) => s.category === selectedCategory
+              );
+              if (firstMatch) {
+                setSelectedSensorType(firstMatch.label);
+                setSensorName(`${firstMatch.label} - ${uuidv4().slice(0, 8)}`);
+                setSelectedConnectivityType(firstMatch.connectivity[0] ?? "");
+              }
+            }}
+            className="border-2 border-slate-500 p-2 rounded-md capitalize"
+          >
+            {[...new Set(allSensors.map((s) => s.category))].map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Type */}
+        <div className="flex flex-col gap-2 mb-3 w-full">
+          <label htmlFor="sensor-type" className="font-bold text-slate-700">
+            Sensor Type
+          </label>
+          <select
+            id="sensor-type"
+            name="sensor_type"
+            value={selectedSensorType}
+            onChange={(e) => {
+              const sensor = allSensors.find((s) => s.label === e.target.value);
+              if (sensor) {
+                setSelectedSensorType(sensor.label);
+                setSensorName(`${sensor.label} - ${uuidv4().slice(0, 8)}`);
+                setSelectedConnectivityType(sensor.connectivity[0] ?? "");
+              }
+            }}
+            className="border-2 border-slate-500 p-2 rounded-md capitalize"
+          >
+            {allSensors
+              .filter((s) => s.category === selectedSensorCategory)
+              .map((s) => (
+                <option key={s.label} value={s.label}>
+                  {s.label}
                 </option>
               ))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-2 mb-3 w-full max-w-70 justify-center  items-center ">
-            <label htmlFor="sensor-name" className="font-bold text-slate-700">
-              Sensor Name
+          </select>
+        </div>
+
+        {/* Name */}
+        <div className="flex flex-col gap-2 mb-3 w-full">
+          <label htmlFor="sensor-name" className="font-bold text-slate-700">
+            Sensor Name
+          </label>
+          <input
+            id="sensor-name"
+            name="sensor_name"
+            type="text"
+            required
+            onChange={(e) => setSensorName(e.target.value)}
+            value={sensorName}
+            className="border-2 border-slate-500 p-2 rounded-md"
+          />
+        </div>
+
+        {/* X and Y */}
+        <div className="flex gap-4 mb-3 w-full">
+          <div className="flex flex-col w-1/2">
+            <label htmlFor="x-position" className="font-bold text-slate-700">
+              X Position
             </label>
             <input
-              id="sensor-name"
-              name="sensor_name"
-              type="text"
+              id="x-position"
+              name="x_position"
+              type="number"
               required
-              placeholder="Enter radius in meters"
-              onChange={(e) => setSensorName(e.target.value)}
-              value={sensorName}
-              className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md cursor-pointer"
+              value={xPosition}
+              onChange={(e) => setXPosition(Number(e.target.value))}
+              className="border-2 border-slate-500 p-2 rounded-md"
             />
           </div>
-
-          <div className="flex gap-5 w-full justify-evenly mb-3">
-            <div className="flex justify-center  items-center flex-col gap-2">
-              <label
-                htmlFor="x-position"
-                className="font-bold text-slate-700 cursor-pointer"
-              >
-                x position from origin (m)
-              </label>
-              <input
-                id="x-position"
-                name="x_position"
-                type="number"
-                required
-                placeholder="Enter position in meters"
-                value={xPosition}
-                onChange={(e) => setXPosition(e.target.value)}
-                className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md cursor-pointer max-w-40"
-              />
-            </div>
-            <div className="flex justify-center  items-center flex-col gap-2">
-              <label htmlFor="x-position" className="font-bold text-slate-700">
-                y position from origin (m)
-              </label>
-              <input
-                id="y-position"
-                name="y_position"
-                type="number"
-                required
-                placeholder="Enter position in meters"
-                onChange={(e) => setYPosition(e.target.value)}
-                value={yPosition}
-                className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md cursor-pointer max-w-40"
-              />
-            </div>
+          <div className="flex flex-col w-1/2">
+            <label htmlFor="y-position" className="font-bold text-slate-700">
+              Y Position
+            </label>
+            <input
+              id="y-position"
+              name="y_position"
+              type="number"
+              required
+              value={yPosition}
+              onChange={(e) => setYPosition(Number(e.target.value))}
+              className="border-2 border-slate-500 p-2 rounded-md"
+            />
           </div>
-          <div className="flex flex-col gap-2 mb-3 w-full max-w-70">
+        </div>
+
+        {/* Connectivity */}
+        {selectedSensor && selectedSensor.connectivity.length > 0 && (
+          <div className="flex flex-col gap-2 mb-3 w-full">
             <label
               htmlFor="connectivity-type"
-              className="font-bold text-slate-700 cursor-pointer"
+              className="font-bold text-slate-700"
             >
-              Type of Connectivity
+              Connectivity Type
             </label>
             <select
               id="connectivity-type"
               name="connectivity_type"
               value={selectedConnectivityType}
               onChange={(e) => setSelectedConnectivityType(e.target.value)}
-              className="flex border-2 border-slate-500 w-full p-2 rounded-md cursor-pointer"
+              className="border-2 border-slate-500 p-2 rounded-md"
             >
-              {SensorTypes()
-                .find((sensor) => sensor.type === selectedSensorType)
-                ?.connectivity.map((connectivity) => (
-                  <option key={connectivity} value={connectivity}>
-                    {connectivity}
-                  </option>
-                ))}
+              {selectedSensor.connectivity.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
             </select>
           </div>
+        )}
 
-          <div className="flex flex-col gap-2 mb-3 max-w-40 justify-center  items-center ">
-            <label htmlFor="sensor-radius" className="font-bold text-slate-700">
-              Coverage Radius (m)
-            </label>
-            <input
-              id="sensor-radius"
-              name="sensor_radius"
-              type="number"
-              placeholder="Enter radius in meters"
-              required
-              onChange={(e) => setRadius(e.target.value)}
-              value={radius}
-              className="flex border-2 border-slate-500 w-full h-full p-2 rounded-md cursor-pointer"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="text-white bg-green-600 bg-blue p-2 rounded-md hover:bg-blue-hover font-bold flex justify-center items-center w-full max-w-[12em] hover:scale-[1.02] hover:brightness-110 translate-y-1 mb-3 cursor-pointer"
-          >
-            Submit
-          </button>
+        {/* Radius */}
+        <div className="flex flex-col gap-2 mb-3 w-full">
+          <label htmlFor="sensor-radius" className="font-bold text-slate-700">
+            Sensor Radius (m)
+          </label>
+          <input
+            id="sensor-radius"
+            name="sensor_radius"
+            type="number"
+            required
+            value={radius}
+            onChange={(e) => setRadius(Number(e.target.value))}
+            className="border-2 border-slate-500 p-2 rounded-md"
+          />
         </div>
-      </form>
-    </>
+
+        <button
+          type="submit"
+          className="text-white bg-green-600 p-2 rounded-md font-bold hover:brightness-110 hover:scale-105 transition-transform"
+        >
+          Submit
+        </button>
+      </div>
+    </form>
   );
 }

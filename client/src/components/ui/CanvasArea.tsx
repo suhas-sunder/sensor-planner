@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import type { CanvasAreaProps, Device, Sensor } from "../utils/other/Types";
+import type {
+  CanvasAreaProps,
+  Device,
+  Person,
+  Sensor,
+} from "../utils/other/Types";
 import RoomData from "../data/RoomData.js";
 import DrawSensor from "../utils/drawings/DrawSensor.js";
 import DrawRoomWithWalls from "../utils/drawings/DrawRoomWithWalls";
@@ -13,6 +18,7 @@ import DispCursorPos from "../overlays/DispCursorPos.js";
 import DetectConnectedNodes from "../utils/computations/DetectConnectedNodes.js";
 import DetectInterferenceNodes from "../utils/computations/DetectInterferenceNodes.js";
 import { useParams } from "react-router-dom";
+import DrawPeople from "../utils/drawings/DrawPeople.js";
 const CanvasArea: React.FC<CanvasAreaProps> = ({
   selectedNodeId,
   onCanvasClick,
@@ -39,6 +45,27 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   const [draggingSensorId, setDraggingSensorId] = useState<string | null>(null);
   const [draggingDeviceId, setDraggingDeviceId] = useState<string | null>(null);
   const defaultSensorRadius = 30;
+  const [people, setPeople] = useState<Person[]>([
+    {
+      id: "person-1",
+      floor: 4,
+      path: [
+        { x: 100, y: 100 },
+        { x: 400, y: 100 },
+        { x: 400, y: 300 },
+        { x: 600, y: 300 },
+        { x: 1200, y: 200 },
+      ],
+      currentIndex: 0,
+      direction: 1,
+      blink: true,
+      color: "deeppink",
+      currentPosition: { x: 100, y: 100 },
+      animationSpeed: 140, // pixels/sec
+    },
+  ]);
+
+  const floorPeople = people.filter((p) => p.floor === currentFloor);
 
   // Handle canvas click
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -276,6 +303,10 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
         pulsePhase // Current animation state for pulsing effect
       );
     });
+
+    floorPeople.forEach((person) => {
+      DrawPeople(ctx, person, viewport);
+    });
   }, [
     floorSensors, // Redraw if floorSensors added, removed, or updated
     floorDevices, // Redraw if floorDevices added, removed, or updated
@@ -284,6 +315,59 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
     canvasSize, // Redraw when canvas is resized
     pulsePhase, // Redraw every animation frame to reflect pulse animation
   ]);
+
+  useEffect(() => {
+    let animationFrameId: number;
+    let lastTimestamp: number | null = null;
+
+    const updatePositions = (timestamp: number) => {
+      if (lastTimestamp === null) lastTimestamp = timestamp;
+      const delta = (timestamp - lastTimestamp) / 1000;
+      lastTimestamp = timestamp;
+
+      setPeople((prevPeople) =>
+        prevPeople.map((person) => {
+          if (person.floor !== currentFloor || person.path.length < 2) {
+            return person;
+          }
+
+          const { path, currentIndex, direction, animationSpeed = 80 } = person;
+
+          const nextIndex = currentIndex + direction;
+          const reachedEnd = nextIndex < 0 || nextIndex >= path.length;
+
+          const start = path[currentIndex];
+          const end = path[reachedEnd ? currentIndex - direction : nextIndex];
+
+          const dx = end.x - start.x;
+          const dy = end.y - start.y;
+          const distance = Math.hypot(dx, dy);
+
+          const moveStep = animationSpeed * delta;
+          const newX = person.currentPosition.x + (dx / distance) * moveStep;
+          const newY = person.currentPosition.y + (dy / distance) * moveStep;
+
+          const traveled = Math.hypot(newX - start.x, newY - start.y);
+          const reached = traveled >= distance;
+
+          return {
+            ...person,
+            currentPosition: reached ? end : { x: newX, y: newY },
+            currentIndex: reached ? nextIndex : currentIndex,
+            direction:
+              reached && (nextIndex === path.length - 1 || nextIndex === 0)
+                ? (-direction as 1 | -1)
+                : direction,
+          };
+        })
+      );
+
+      animationFrameId = requestAnimationFrame(updatePositions);
+    };
+
+    animationFrameId = requestAnimationFrame(updatePositions);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [currentFloor]);
 
   return (
     <div className="flex relative flex-col items-center justify-center w-full h-screen bg-white overflow-hidden cursor-pointer">
