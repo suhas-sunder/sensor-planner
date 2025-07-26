@@ -5,6 +5,7 @@ import AddPeopleModal from "../ui/AddPeopleModal";
 import NodeController from "../ui/EditNodeMenu";
 import { useParams } from "react-router-dom";
 import useSensorDeviceContext from "../hooks/useSensorDeviceContext";
+import ManagePeoplePanel from "../ui/ManagePeoplePanel";
 
 export default function SidebarMenu() {
   const { floorId } = useParams();
@@ -14,7 +15,7 @@ export default function SidebarMenu() {
   const [showDeviceModal, setShowDeviceModal] = useState(false);
   const [showPeopleModal, setShowPeopleModal] = useState(false);
 
-  const { sensors, devices, selectedNodeId, setSelectedNodeId } =
+  const { sensors, devices, people, selectedNodeId, setSelectedNodeId } =
     useSensorDeviceContext();
 
   // Effect to ensure that the selected node ID is valid for the current floor
@@ -42,7 +43,7 @@ export default function SidebarMenu() {
         <AddPeopleModal setShowPeopleModal={setShowPeopleModal} />
       )}
 
-      <div className="flex flex-col min-w-60 items-center bg-slate-800 gap-5 text-white">
+      <div className="flex flex-col min-w-64 items-center bg-slate-800 gap-5 text-white overflow-y-auto">
         <h1 className="flex font-bold text-2xl mt-4">
           {" "}
           Floor #{currentFloor}{" "}
@@ -50,6 +51,7 @@ export default function SidebarMenu() {
 
         {/* <Searchbar /> */}
         <NodeController />
+        {people.length > 0 && <ManagePeoplePanel />}
 
         <div className="flex flex-col gap-4 mt-auto -translate-y-6">
           <button
