@@ -40,6 +40,8 @@ export type LocalStorageData = {
   actionType: string;
   sensors?: Sensor[];
   devices?: Device[];
+  people?: Person[];
+  setPeople?: React.Dispatch<React.SetStateAction<Person[]>>;
   selectedNodeId?: string | null;
   setSensors?: React.Dispatch<React.SetStateAction<Sensor[]>>;
   setDevices?: React.Dispatch<React.SetStateAction<Device[]>>;

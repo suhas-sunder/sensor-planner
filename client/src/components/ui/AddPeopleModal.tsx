@@ -17,15 +17,21 @@ export default function AddPeopleModal({
   const [speed, setSpeed] = useState(100);
   const [color, setColor] = useState("#FF1493"); // Hex code for deeppink
 
-  const [pathPoints, setPathPoints] = useState([{ x: 100, y: 100 }]);
+  const [pathPoints, setPathPoints] = useState([
+    { x: 100, y: 100 },
+    { x: 150, y: 100 },
+  ]);
 
   const handlePositionChange = (
     index: number,
     axis: "x" | "y",
     value: number
   ) => {
+    // Update the specific point's x or y value
     setPathPoints((prev) =>
-      prev.map((pt, i) => (i === index ? { ...pt, [axis]: value } : pt))
+      prev.map((points, i) =>
+        i === index ? { ...points, [axis]: value } : points
+      )
     );
   };
 
@@ -36,6 +42,15 @@ export default function AddPeopleModal({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (pathPoints.length < 2) return;
+    const first = pathPoints[0];
+    const second = pathPoints[1];
+    if (first.x === second.x && first.y === second.y) {
+      alert("First two path points must be different for animation to work.");
+      return;
+    }
+
     setShowPeopleModal(false);
 
     const newPerson: Person = {
@@ -48,8 +63,6 @@ export default function AddPeopleModal({
       animationSpeed: speed,
       color,
     };
-
-    console.log("newPerson: ", newPerson);
 
     setPeople((prev: Person[]) => [...prev, newPerson]);
   };
