@@ -8,10 +8,12 @@ import DetectInterferenceNodes from "../utils/computations/DetectInterferenceNod
 import NodeConnectionSummary from "../layout/NodeConnectionSummary";
 import EditSensors from "./EditSensors";
 import EditDevices from "./EditDevices";
+import useEventsContext from "../hooks/useEventsContext";
 
 export default function EditNodeMenu() {
   const { sensors, devices, setSensors, setDevices, selectedNodeId } =
     useSensorDeviceContext();
+  const { addEvent } = useEventsContext();
 
   const sensorTypes = useMemo(() => SensorTypes(), []);
   const deviceTypes = useMemo(() => DeviceTypes(), []);
@@ -51,15 +53,49 @@ export default function EditNodeMenu() {
   }, [node, sensorTypes]);
 
   useEffect(() => {
-    if (!pendingUpdate) return;
+    if (!pendingUpdate || !node) return;
 
-    if ("sensor_rad" in pendingUpdate) {
-      const updatedSensors = sensors.map((s) =>
-        s.id === pendingUpdate.id ? pendingUpdate : s
+    const changedFields: string[] = [];
+
+    const keysToCompare: (keyof (Sensor & Device))[] = [
+      "name",
+      "label",
+      "type",
+      "x",
+      "y",
+      "connectivity",
+      "sensor_rad",
+      "device_rad",
+    ];
+
+    keysToCompare.forEach((key) => {
+      const oldVal = (node as any)[key];
+      const newVal = (pendingUpdate as any)[key];
+
+      // Shallow compare or stringify array (e.g., connectivity)
+      const isDifferent =
+        Array.isArray(oldVal) && Array.isArray(newVal)
+          ? JSON.stringify(oldVal) !== JSON.stringify(newVal)
+          : oldVal !== newVal;
+
+      if (isDifferent) {
+        changedFields.push(
+          `${key}: ${JSON.stringify(oldVal)} → ${JSON.stringify(newVal)}`
+        );
+      }
+    });
+
+    const isSensor = "sensor_rad" in pendingUpdate;
+
+    // Apply the update
+    if (isSensor) {
+      const updatedSensors = sensors.map((sensor) =>
+        sensor.id === pendingUpdate.id ? pendingUpdate : sensor
       );
       const { updatedSensors: s1, updatedDevices: d1 } = DetectConnectedNodes(
         updatedSensors,
-        devices
+        devices,
+        addEvent
       );
       const { updatedSensors: s2, updatedDevices: d2 } =
         DetectInterferenceNodes(s1, d1);
@@ -71,12 +107,26 @@ export default function EditNodeMenu() {
       );
       const { updatedSensors: s1, updatedDevices: d1 } = DetectConnectedNodes(
         sensors,
-        updatedDevices
+        updatedDevices,
+        addEvent
       );
       const { updatedSensors: s2, updatedDevices: d2 } =
         DetectInterferenceNodes(s1, d1);
       setSensors(s2);
       setDevices(d2);
+    }
+
+    // Only log if there were changes
+    if (changedFields.length > 0) {
+      addEvent({
+        nodeId: pendingUpdate.id,
+        nodeType: isSensor ? "sensor" : "device",
+        floor: pendingUpdate.floor,
+        eventType: "status",
+        message: `${isSensor ? "Sensor" : "Device"} "${
+          pendingUpdate.name
+        }" was updated: ${changedFields.join(", ")}`,
+      });
     }
 
     setPendingUpdate(null);
@@ -123,7 +173,20 @@ export default function EditNodeMenu() {
   const handleDelete = () => {
     if (!editableNode) return;
 
-    if ("sensor_rad" in editableNode) {
+    const isSensor = "sensor_rad" in editableNode;
+
+    // Log before removal
+    addEvent({
+      nodeId: editableNode.id,
+      nodeType: isSensor ? "sensor" : "device",
+      floor: editableNode.floor,
+      eventType: "status",
+      message: `${isSensor ? "Sensor" : "Device"} "${
+        editableNode.name ?? editableNode.id
+      }" was deleted`,
+    });
+
+    if (isSensor) {
       setSensors((prev) => prev.filter((s) => s.id !== editableNode.id));
     } else {
       setDevices((prev) => prev.filter((d) => d.id !== editableNode.id));

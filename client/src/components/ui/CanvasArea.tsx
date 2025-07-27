@@ -236,7 +236,8 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       if (draggingDeviceId || draggingSensorId) {
         const { updatedSensors, updatedDevices } = DetectConnectedNodes(
           sensorsRef.current,
-          devicesRef.current
+          devicesRef.current,
+          addEvent
         );
 
         const {
