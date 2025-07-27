@@ -236,20 +236,19 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
       if (draggingDeviceId || draggingSensorId) {
         const { updatedSensors, updatedDevices } = DetectConnectedNodes(
           sensorsRef.current,
-          devicesRef.current
+          devicesRef.current,
+          addEvent
         );
 
         const {
           updatedSensors: sensorsWithInterference,
           updatedDevices: devicesWithInterference,
-        } = DetectInterferenceNodes(updatedSensors, updatedDevices);
+        } = DetectInterferenceNodes(updatedSensors, updatedDevices, addEvent);
 
         setSensors(sensorsWithInterference);
         setDevices(devicesWithInterference);
       }
 
-      console.log("Sensors: " + JSON.stringify(sensorsRef.current));
-      console.log("Devices: " + JSON.stringify(devicesRef.current));
       isDraggingRef.current = false;
     };
 
@@ -342,6 +341,9 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
       lastTimestamp = timestamp;
 
+      // MOTION DETECTION
+      DetectMotion(sensorsRef.current, peopleRef.current, addEvent);
+
       // Update people positions based on their paths
       setPeople((prevPeople) => {
         return prevPeople.map((person) => {
@@ -385,9 +387,6 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
 
           const reached = newProgress >= 1;
           const clampedProgress = reached ? 1 : newProgress;
-
-          // MOTION DETECTION
-          DetectMotion(sensorsRef.current, peopleRef.current, addEvent);
 
           return {
             ...person,
