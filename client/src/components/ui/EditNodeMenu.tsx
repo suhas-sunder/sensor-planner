@@ -98,7 +98,7 @@ export default function EditNodeMenu() {
         addEvent
       );
       const { updatedSensors: s2, updatedDevices: d2 } =
-        DetectInterferenceNodes(s1, d1);
+        DetectInterferenceNodes(s1, d1, addEvent);
       setSensors(s2);
       setDevices(d2);
     } else {
@@ -111,7 +111,7 @@ export default function EditNodeMenu() {
         addEvent
       );
       const { updatedSensors: s2, updatedDevices: d2 } =
-        DetectInterferenceNodes(s1, d1);
+        DetectInterferenceNodes(s1, d1, addEvent);
       setSensors(s2);
       setDevices(d2);
     }

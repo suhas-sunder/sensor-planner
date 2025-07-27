@@ -6,7 +6,7 @@ type AddEventFn = (event: Omit<SimulationEvent, "id" | "timestamp">) => void;
 export default function DetectInterferenceNodes(
   sensors: Sensor[],
   devices: Device[],
-  addEvent?: AddEventFn
+  addEvent: AddEventFn
 ): { updatedSensors: Sensor[]; updatedDevices: Device[] } {
   const defaultSensorRadius = 150;
   const defaultDeviceRadius = 30;
