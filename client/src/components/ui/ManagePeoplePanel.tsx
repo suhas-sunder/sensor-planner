@@ -1,11 +1,16 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import useSensorDeviceContext from "../hooks/useSensorDeviceContext";
 import type { Person } from "../utils/other/Types";
 
 export default function ManagePeoplePanel() {
+  const { floorId } = useParams();
+  const currentFloor = Number(floorId) || 1;
+
   const { people, setPeople } = useSensorDeviceContext();
+  const visiblePeople = people.filter((p) => p.floor === currentFloor);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const selectedPerson = people.find((p) => p.id === selectedId);
+  const selectedPerson = visiblePeople.find((p) => p.id === selectedId);
 
   const handleUpdate = (updates: Partial<Person>) => {
     if (!selectedPerson) return;
@@ -19,7 +24,7 @@ export default function ManagePeoplePanel() {
     setSelectedId(null);
   };
 
-  if (!people.length) return <></>;
+  if (!visiblePeople.length) return <></>;
 
   return (
     <div className="flex flex-col w-full px-4 py-2 border-t border-slate-600 text-white">
@@ -29,7 +34,7 @@ export default function ManagePeoplePanel() {
             Simulated People
           </h3>
           <ul className="flex flex-col gap-1">
-            {people.map((p) => (
+            {visiblePeople.map((p) => (
               <li key={p.id}>
                 <button
                   onClick={() => setSelectedId(p.id)}
