@@ -22,7 +22,7 @@ export default function AddPeopleModal({
 
   const [pathPoints, setPathPoints] = useState([
     { x: 100, y: 100 },
-    { x: 150, y: 100 },
+    { x: 400, y: 100 },
   ]);
 
   const handlePositionChange = (
