@@ -9,13 +9,15 @@ export default function useLocalStorage({
   sensors,
   devices,
   people,
+  selectedNodeId,
+  eventLog,
+  floorIds,
   setSensors,
   setDevices,
   setPeople,
   setSelectedNodeId,
-  selectedNodeId,
-  eventLog,
   setEventLog,
+  setFloorIds,
 }: LocalStorageData) {
   const hasInitialized = useRef(false); // Used across all effects
 
@@ -36,6 +38,7 @@ export default function useLocalStorage({
     const storedDevices = localStorage.getItem("deviceData");
     const storedPeople = localStorage.getItem("peopleData");
     const storedEvents = localStorage.getItem("eventLog");
+    const storedFloorIds = localStorage.getItem("floorIds");
     const storedSelectedNodeId = localStorage.getItem("selectedNodeId");
 
     try {
@@ -62,6 +65,20 @@ export default function useLocalStorage({
       console.error("Failed to parse event log data");
     }
 
+    try {
+      if (storedFloorIds && setFloorIds) {
+        const parsed = JSON.parse(storedFloorIds);
+        if (
+          Array.isArray(parsed) &&
+          parsed.every((id) => typeof id === "string")
+        ) {
+          setFloorIds(parsed);
+        }
+      }
+    } catch {
+      console.error("Failed to parse floorIds");
+    }
+
     if (storedSelectedNodeId && setSelectedNodeId) {
       setSelectedNodeId(storedSelectedNodeId);
     }
@@ -72,19 +89,28 @@ export default function useLocalStorage({
     setPeople,
     setEventLog,
     setSelectedNodeId,
+    setFloorIds,
   ]);
 
   // Sync changes to localStorage
   useEffect(() => {
     if (actionType !== "sync" || !hasInitialized.current) return;
-
     if (sensors) localStorage.setItem("sensorData", JSON.stringify(sensors));
     if (devices) localStorage.setItem("deviceData", JSON.stringify(devices));
     if (people) localStorage.setItem("peopleData", JSON.stringify(people));
     if (eventLog) localStorage.setItem("eventLog", JSON.stringify(eventLog));
+    if (floorIds) localStorage.setItem("floorIds", JSON.stringify(floorIds));
     if (selectedNodeId || selectedNodeId === null)
       localStorage.setItem("selectedNodeId", selectedNodeId || "");
-  }, [actionType, sensors, devices, people, eventLog, selectedNodeId]);
+  }, [
+    actionType,
+    sensors,
+    devices,
+    people,
+    eventLog,
+    selectedNodeId,
+    floorIds,
+  ]);
 
   // Generate user info on first load if missing
   useEffect(() => {

@@ -1,0 +1,25 @@
+@keyframes spinAndScale {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseOpacity {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.sunAnimation {
+  animation: spinAndScale 90s linear infinite,
+    pulseOpacity 1s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, opacity;
+}

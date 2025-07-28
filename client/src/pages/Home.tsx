@@ -1,6 +1,7 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+import useEventsContext from "../components/hooks/useEventsContext";
+import styles from "../components/utils/styling/GlobalAnimations.module.css";
 
 const BuildingMid = ({ className }: { className?: string }) => (
   <svg
@@ -36,6 +37,28 @@ const BuildingTop = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const Sun = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 181 182"
+    preserveAspectRatio="xMidYMid meet"
+    className={className}
+    fill="currentColor"
+  >
+    <g transform="translate(0,182) scale(0.05,-0.05)" stroke="none">
+      <path d="M1722 3552 c-41 -49 -20 -572 23 -600 85 -53 105 1 111 297 5 285 -5 331 -76 331 -19 0 -45 -12 -58 -28z" />
+      <path d="M564 3056 c-47 -47 -22 -89 151 -261 184 -183 244 -211 286 -134 19 37 1 62 -163 230 -182 186 -226 213 -274 165z" />
+      <path d="M2760 2898 c-99 -100 -180 -186 -180 -191 0 -139 111 -107 305 88 174 175 197 215 151 261 -49 49 -99 20 -276 -158z" />
+      <path d="M1520 2722 c-949 -307 -912 -1581 54 -1832 714 -186 1379 517 1146 1210 -166 492 -718 778 -1200 622z m620 -194 c620 -291 623 -1151 6 -1431 -682 -310 -1399 382 -1086 1048 184 392 683 569 1080 383z" />
+      <path d="M2973 1883 c-100 -110 -16 -148 285 -132 297 17 360 48 271 138 -50 49 -510 45 -556 -6z" />
+      <path d="M64 1876 c-35 -35 -29 -111 11 -133 104 -59 605 7 605 79 0 75 -547 123 -616 54z" />
+      <path d="M725 855 c-183 -184 -207 -225 -161 -271 46 -46 86 -23 261 151 173 172 203 229 151 281 -42 42 -63 28 -251 -161z" />
+      <path d="M2613 1003 c-50 -55 -47 -60 152 -258 184 -183 225 -207 271 -161 47 47 22 89 -161 271 -199 198 -211 205 -262 148z" />
+      <path d="M1739 648 c-64 -76 -18 -588 52 -588 73 0 89 57 89 310 0 288 -51 388 -141 278z" />
+    </g>
+  </svg>
+);
+
 const BuildingBottom = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -56,31 +79,32 @@ const BuildingBottom = ({ className }: { className?: string }) => (
 );
 
 export default function Home() {
-  const [middleFloors, setMiddleFloors] = useState<string[]>(
-    Array.from({ length: 4 }, () => uuidv4())
-  );
+  const { floorIds, setFloorIds } = useEventsContext();
 
   const handleAddFloor = () => {
-    setMiddleFloors((prev) => [...prev, uuidv4()]);
+    setFloorIds((prev) => [...prev, uuidv4()]);
   };
 
   const handleRemoveFloor = () => {
-    if (middleFloors.length > 1) {
-      setMiddleFloors((prev) => prev.slice(0, -1));
+    if (floorIds.length > 1) {
+      setFloorIds((prev) => prev.slice(0, -1));
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full">
-      <div className="flex flex-col items-center justify-center mt-12 mb-16 gap-5">
+    <div className="flex relative flex-col items-center justify-center w-full">
+      <Sun
+        className={`absolute top-[7%] right-[11%] w-[14em] h-[14em] fill-slate-300 ${styles.sunAnimation}`}
+      />
+      <div className="flex flex-col items-center justify-center mt-12 mb-10 gap-5 z-[10]">
         <h1 className="text-[4rem] italic text-sky-900">SENSOR PLANNER</h1>
         <p className="text-2xl text-slate-700 max-w-[42em] text-center leading-[2em]">
-          Plan and manage your sensor placement and coverage on 2D floor plans
-          for your building. Visualize sensor coverage, optimize sensor
-          placement, and analyze data collected from sensors.
+          Design, deploy, and evaluate sensor coverage across 2D floor plans.
+          Optimize layouts, reduce overlap, and analyze spatial performance from
+          sensor data.
         </p>
       </div>
-      <p className="text-xl text-sky-900 max-w-[42em] mb-6 leading-[2em]">
+      <p className="text-xl text-sky-900 max-w-[42em] mb-6 leading-[2em] z-[10]">
         <span className="font-semibold italic">Select a floor</span> on the
         building below to get started! Each floor acts like a{" "}
         <span className="font-semibold italic">save file</span> that you can
@@ -90,35 +114,35 @@ export default function Home() {
       <div className="mb-4 flex gap-[23em] translate-y-[3.6em] z-[20]">
         <button
           onClick={handleAddFloor}
-          className="text-slate-700 border-2 rounded-lg px-4 py-2 hover:text-slate-500 hover:scale-105 cursor-pointer"
+          className="text-sky-700 border-2 rounded-lg px-4 py-2 hover:text-sky-600 hover:scale-105 cursor-pointer -translate-x-1"
         >
           Add Floor
         </button>
         <button
           onClick={handleRemoveFloor}
-          className="text-slate-500 border-2 rounded-lg px-4 py-2 hover:text-slate-400 hover:scale-105 cursor-pointer translate-x-4"
+          className="text-sky-700 border-2 rounded-lg px-4 py-2 hover:text-sky-600 hover:scale-105 cursor-pointer translate-x-4"
         >
           Delete Floor
         </button>
       </div>
 
-      <div className="flex flex-col-reverse h-full max-w-[40em]">
+      <div className="flex flex-col-reverse h-full max-w-[40em] mb-80 z-[10]">
         {/* Bottom Visual */}
         <div className="flex w-full justify-center">
           <BuildingBottom className=" w-[85%] h-auto fill-slate-500" />
         </div>
 
         {/* Middle Clickable Floors */}
-        {middleFloors.map((floorId, index) => (
+        {floorIds.map((floorId, index) => (
           <Link
             key={floorId}
             to={`dashboard/floor/${index + 1}`}
             className="flex relative group w-full h-full rounded-md"
           >
-            <div className="flex absolute group-hover:text-xl top-1/2 transform text-slate-600 font-semibold">
+            <div className="flex absolute group-hover:text-xl top-1/2 transform text-sky-700 font-semibold opacity-70">
               Floor {index + 1}
             </div>
-            <BuildingMid className="flex w-[60em] h-auto mx-auto fill-slate-700 group-hover:fill-slate-400 group-hover:scale-105 transition-all z-[1]" />
+            <BuildingMid className="flex w-[60em] h-auto mx-auto fill-slate-700 group-hover:fill-slate-400 group-hover:scale-105 transition-all z-[20]" />
           </Link>
         ))}
 
