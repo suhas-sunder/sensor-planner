@@ -11,7 +11,7 @@ export default function DeviceTypes() {
         "Thread",
       ],
       compatibleSensors: ["temperature", "humidity", "occupancy"],
-      interferenceProtocols: ["Wi-Fi 2.4GHz", "Wi-Fi 5GHz"], // Zigbee & Thread excluded
+      interferenceProtocols: ["Wi-Fi 2.4GHz", "Wi-Fi 5GHz"],
     },
     {
       type: "appliance",
@@ -32,7 +32,7 @@ export default function DeviceTypes() {
       label: "Smart Door Lock",
       connectivity: ["Zigbee 3.0", "Z-Wave", "BLE 5.0", "Wi-Fi 2.4GHz"],
       compatibleSensors: ["door", "proximity", "occupancy"],
-      interferenceProtocols: ["Wi-Fi 2.4GHz", "BLE 5.0"], // Z-Wave ignored
+      interferenceProtocols: ["Wi-Fi 2.4GHz", "BLE 5.0"],
     },
     {
       type: "monitoring",
@@ -67,14 +67,7 @@ export default function DeviceTypes() {
       label: "Cordless Phone",
       connectivity: ["DECT 6.0"],
       compatibleSensors: [],
-      interferenceProtocols: [], // DECT is isolated
-    },
-    {
-      type: "monitoring",
-      label: "Wireless Baby Camera",
-      connectivity: ["Wi-Fi 2.4GHz"],
-      compatibleSensors: ["camera", "sound"],
-      interferenceProtocols: ["Wi-Fi 2.4GHz"],
+      interferenceProtocols: [],
     },
   ];
 
