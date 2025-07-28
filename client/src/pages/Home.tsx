@@ -1,6 +1,6 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+import useEventsContext from "../components/hooks/useEventsContext";
 
 const BuildingMid = ({ className }: { className?: string }) => (
   <svg
@@ -56,28 +56,26 @@ const BuildingBottom = ({ className }: { className?: string }) => (
 );
 
 export default function Home() {
-  const [middleFloors, setMiddleFloors] = useState<string[]>(
-    Array.from({ length: 4 }, () => uuidv4())
-  );
+  const { floorIds, setFloorIds } = useEventsContext();
 
   const handleAddFloor = () => {
-    setMiddleFloors((prev) => [...prev, uuidv4()]);
+    setFloorIds((prev) => [...prev, uuidv4()]);
   };
 
   const handleRemoveFloor = () => {
-    if (middleFloors.length > 1) {
-      setMiddleFloors((prev) => prev.slice(0, -1));
+    if (floorIds.length > 1) {
+      setFloorIds((prev) => prev.slice(0, -1));
     }
   };
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
-      <div className="flex flex-col items-center justify-center mt-12 mb-16 gap-5">
+      <div className="flex flex-col items-center justify-center mt-12 mb-10 gap-5">
         <h1 className="text-[4rem] italic text-sky-900">SENSOR PLANNER</h1>
         <p className="text-2xl text-slate-700 max-w-[42em] text-center leading-[2em]">
-          Plan and manage your sensor placement and coverage on 2D floor plans
-          for your building. Visualize sensor coverage, optimize sensor
-          placement, and analyze data collected from sensors.
+          Design, deploy, and evaluate sensor coverage across 2D floor plans.
+          Optimize layouts, reduce overlap, and analyze spatial performance from
+          sensor data.
         </p>
       </div>
       <p className="text-xl text-sky-900 max-w-[42em] mb-6 leading-[2em]">
@@ -90,7 +88,7 @@ export default function Home() {
       <div className="mb-4 flex gap-[23em] translate-y-[3.6em] z-[20]">
         <button
           onClick={handleAddFloor}
-          className="text-slate-700 border-2 rounded-lg px-4 py-2 hover:text-slate-500 hover:scale-105 cursor-pointer"
+          className="text-slate-500 border-2 rounded-lg px-4 py-2 hover:text-slate-400 hover:scale-105 cursor-pointer"
         >
           Add Floor
         </button>
@@ -109,7 +107,7 @@ export default function Home() {
         </div>
 
         {/* Middle Clickable Floors */}
-        {middleFloors.map((floorId, index) => (
+        {floorIds.map((floorId, index) => (
           <Link
             key={floorId}
             to={`dashboard/floor/${index + 1}`}

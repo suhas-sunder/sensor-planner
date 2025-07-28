@@ -6,6 +6,8 @@ export interface EventsContextType {
   eventLog: SimulationEvent[]; // Full log of all events
   addEvent: (event: Omit<SimulationEvent, "id" | "timestamp">) => void; // Adds a new event
   clearEvents: () => void; // Clears the log
+  floorIds: string[];
+  setFloorIds: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 // Create the context (defaults to null until wrapped in provider)

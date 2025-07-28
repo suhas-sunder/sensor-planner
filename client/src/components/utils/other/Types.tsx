@@ -41,13 +41,15 @@ export type LocalStorageData = {
   sensors?: Sensor[];
   devices?: Device[];
   people?: Person[];
-  setPeople?: React.Dispatch<React.SetStateAction<Person[]>>;
   selectedNodeId?: string | null;
+  eventLog?: SimulationEvent[];
+  floorIds?: string[];
+  setPeople?: React.Dispatch<React.SetStateAction<Person[]>>;
   setSensors?: React.Dispatch<React.SetStateAction<Sensor[]>>;
   setDevices?: React.Dispatch<React.SetStateAction<Device[]>>;
   setSelectedNodeId?: React.Dispatch<React.SetStateAction<string | null>>;
-  eventLog?: SimulationEvent[];
   setEventLog?: React.Dispatch<React.SetStateAction<SimulationEvent[]>>;
+  setFloorIds?: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 export type CursorPosition = {
