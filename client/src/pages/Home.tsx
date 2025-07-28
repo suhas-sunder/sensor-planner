@@ -114,13 +114,13 @@ export default function Home() {
       <div className="mb-4 flex gap-[23em] translate-y-[3.6em] z-[20]">
         <button
           onClick={handleAddFloor}
-          className="text-slate-500 border-2 rounded-lg px-4 py-2 hover:text-slate-400 hover:scale-105 cursor-pointer"
+          className="text-sky-700 border-2 rounded-lg px-4 py-2 hover:text-sky-600 hover:scale-105 cursor-pointer -translate-x-1"
         >
           Add Floor
         </button>
         <button
           onClick={handleRemoveFloor}
-          className="text-slate-500 border-2 rounded-lg px-4 py-2 hover:text-slate-400 hover:scale-105 cursor-pointer translate-x-4"
+          className="text-sky-700 border-2 rounded-lg px-4 py-2 hover:text-sky-600 hover:scale-105 cursor-pointer translate-x-4"
         >
           Delete Floor
         </button>
@@ -139,7 +139,7 @@ export default function Home() {
             to={`dashboard/floor/${index + 1}`}
             className="flex relative group w-full h-full rounded-md"
           >
-            <div className="flex absolute group-hover:text-xl top-1/2 transform text-slate-600 font-semibold">
+            <div className="flex absolute group-hover:text-xl top-1/2 transform text-sky-700 font-semibold opacity-70">
               Floor {index + 1}
             </div>
             <BuildingMid className="flex w-[60em] h-auto mx-auto fill-slate-700 group-hover:fill-slate-400 group-hover:scale-105 transition-all z-[20]" />

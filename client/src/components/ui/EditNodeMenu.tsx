@@ -33,6 +33,20 @@ export default function EditNodeMenu() {
     null
   );
 
+  const getPreviewImagePath = (node: Sensor | Device | null) => {
+    if (!node) return "";
+
+    const sanitize = (text: string) => text.toLowerCase().replace(/\s+/g, "-");
+
+    if ("sensor_rad" in node) {
+      // It's a sensor: use type
+      return `/images/svg/${sanitize(node.type)}.svg`;
+    } else {
+      // It's a device: use label only
+      return `/images/svg/${sanitize(node.label)}.svg`;
+    }
+  };
+
   useEffect(() => {
     if (!node) {
       setEditableNode(null);
@@ -209,8 +223,16 @@ export default function EditNodeMenu() {
         onChange={(e) => handleChange("name", e.target.value)}
       />
 
-      <div className="flex justify-center items-center min-w-40 min-h-40 bg-slate-600 rounded-md">
-        PREVIEW IMG
+      <div className="flex justify-center items-center min-w-40 min-h-40 border-2 border-slate-400 bg-slate-800 rounded-xl">
+        <img
+          src={getPreviewImagePath(editableNode)}
+          alt={
+            "sensor_rad" in editableNode
+              ? editableNode.type
+              : editableNode.label
+          }
+          className="w-36 h-32 flex object-contain  rounded-xl"
+        />
       </div>
 
       <div>Status: Active</div>
