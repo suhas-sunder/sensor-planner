@@ -64,7 +64,7 @@ export default function SensorTypes() {
       type: "light",
       label: "Light Sensor",
       category: "sensor",
-      connectivity: ["BLE 5.0", "Zigbee 3.0"],
+      connectivity: ["Wi-Fi 2.4GHz", "BLE 5.0", "Zigbee 3.0"],
     },
     {
       type: "sound",
