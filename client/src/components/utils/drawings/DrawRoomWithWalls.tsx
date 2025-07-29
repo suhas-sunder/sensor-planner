@@ -30,7 +30,7 @@ export default function DrawRoomWithWalls(
   };
 
   // Draw all walls
-  ctx.fillStyle = "#000";
+  ctx.fillStyle = "#020617";
   for (const wall of Object.values(walls)) {
     ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
   }
@@ -38,20 +38,20 @@ export default function DrawRoomWithWalls(
   // Draw doors (as white sections)
   room.doors?.forEach(({ side, offset, length = 30 }) => {
     const wall = walls[side];
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = "#ffffff";
     if (side === "top" || side === "bottom") {
       ctx.fillRect(wall.x + offset, wall.y, length, wall.h);
     } else {
       ctx.fillRect(wall.x, wall.y + offset, wall.w, length);
     }
 
-    // Optional: draw small brown rectangle to indicate door
-    ctx.fillStyle = "#654321";
-    if (side === "top" || side === "bottom") {
-      ctx.fillRect(wall.x + offset, wall.y, 8, wall.h);
-    } else {
-      ctx.fillRect(wall.x, wall.y + offset, wall.w, 8);
-    }
+    // Draw small brown rectangle to indicate door
+    // ctx.fillStyle = "#654321";
+    // if (side === "top" || side === "bottom") {
+    //   ctx.fillRect(wall.x + offset, wall.y, 8, wall.h);
+    // } else {
+    //   ctx.fillRect(wall.x, wall.y + offset, wall.w, 8);
+    // }
   });
 
   // Draw windows (as light blue segments)
@@ -67,7 +67,7 @@ export default function DrawRoomWithWalls(
 
   // Room label
   ctx.font = "14px sans-serif";
-  ctx.fillStyle = "#000";
+  ctx.fillStyle = "#020617";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(room.name, screenX + room.width / 2, screenY + room.height / 2);
