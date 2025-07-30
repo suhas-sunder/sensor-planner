@@ -22,6 +22,7 @@ export default function EditDevices({
     type: string;
     label: string;
     connectivity: string[];
+    compatibleSensors: string[];
   }[];
   editableNode: Device | Sensor;
   setEditableNode: React.Dispatch<React.SetStateAction<Device | Sensor | null>>;
@@ -46,9 +47,12 @@ export default function EditDevices({
       deviceTypes.find((d) => d.type === category)?.label ?? "";
     setSelectedDeviceLabel(firstLabel);
 
-    const newConn =
-      deviceTypes.find((d) => d.type === category && d.label === firstLabel)
-        ?.connectivity[0] ?? "";
+    const match = deviceTypes.find(
+      (d) => d.type === category && d.label === firstLabel
+    );
+
+    const newConn = match?.connectivity[0] ?? "";
+    const newCompatibleSensors = match?.compatibleSensors ?? [];
 
     setEditableNode((prev) => {
       if (!prev || !("device_rad" in prev)) return prev;
@@ -58,6 +62,7 @@ export default function EditDevices({
         name: `${firstLabel} - ${uuidv4()}`,
         label: firstLabel,
         connectivity: [newConn],
+        compatibleSensors: newCompatibleSensors,
       };
       setPendingUpdate(updated);
       return updated;
@@ -66,10 +71,12 @@ export default function EditDevices({
 
   const handleDeviceLabelChange = (label: string) => {
     setSelectedDeviceLabel(label);
-    const newConn =
-      deviceTypes.find(
-        (d) => d.type === selectedDeviceCategory && d.label === label
-      )?.connectivity[0] ?? "";
+    const match = deviceTypes.find(
+      (d) => d.type === selectedDeviceCategory && d.label === label
+    );
+
+    const newConn = match?.connectivity[0] ?? "";
+    const newCompatibleSensors = match?.compatibleSensors ?? [];
 
     setEditableNode((prev) => {
       if (!prev || !("device_rad" in prev)) return prev;
@@ -78,6 +85,7 @@ export default function EditDevices({
         label,
         name: `${selectedDeviceCategory} - ${uuidv4()}`,
         connectivity: [newConn],
+        compatibleSensors: newCompatibleSensors,
       };
       setPendingUpdate(updated);
       return updated;
