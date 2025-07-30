@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import type { Device, Sensor } from "../utils/other/Types";
+import { v4 as uuidv4 } from "uuid";
 
 export default function EditDevices({
   selectedDeviceCategory,
@@ -54,6 +55,7 @@ export default function EditDevices({
       const updated = {
         ...prev,
         type: category,
+        name: `${firstLabel} - ${uuidv4()}`,
         label: firstLabel,
         connectivity: [newConn],
       };
@@ -74,6 +76,7 @@ export default function EditDevices({
       const updated = {
         ...prev,
         label,
+        name: `${selectedDeviceCategory} - ${uuidv4()}`,
         connectivity: [newConn],
       };
       setPendingUpdate(updated);

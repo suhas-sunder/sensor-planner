@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import type { Device, Sensor } from "../utils/other/Types";
+import { v4 as uuidv4 } from "uuid";
 
 export default function EditSensors({
   editableNode,
@@ -38,6 +39,8 @@ export default function EditSensors({
     return sensorTypes.filter((s) => s.category === selectedSensorCategory);
   }, [sensorTypes, selectedSensorCategory]);
 
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
   const handleSensorCategoryChange = (category: string) => {
     const firstMatch = sensorTypes.find((s) => s.category === category);
     if (!firstMatch) return;
@@ -50,6 +53,7 @@ export default function EditSensors({
       const updated = {
         ...prev,
         type: firstMatch.type,
+        name: `${capitalize(firstMatch.type)} Sensor - ${uuidv4()}`,
         connectivity: [firstMatch.connectivity[0] ?? ""],
       };
       setPendingUpdate(updated);
@@ -68,6 +72,7 @@ export default function EditSensors({
       const updated = {
         ...prev,
         type,
+        name: `${capitalize(type)} Sensor - ${uuidv4()}`,
         connectivity: [selected.connectivity[0] ?? ""],
       };
       setPendingUpdate(updated);
