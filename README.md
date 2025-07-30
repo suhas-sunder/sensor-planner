@@ -1,8 +1,40 @@
 # Sensor Planner
 
-A web app for simulating and planning sensor placements in a 2D environment (eg. smart buildings).
+## Simulated Sensor Placement Optimization in Smart Buildings with Context-Aware Access and Control
 
+**Sensor Planner** is a web application designed for simulating and planning the placement of sensors in 2D smart environments such as buildings and homes.
 
-Proof of concept:
+### 🌐 Hosted Live On:
 
-Video: https://drive.google.com/file/d/1rQm7J4klFf4MjSkYem8VUbxm7yhiFk_K/view?usp=sharing
+[www.sensorplanner.com](https://www.sensorplanner.com)
+
+### 🎯 Project Goals
+
+- **Connectivity Behavior Simulation**: Plan and evaluate wireless connectivity, interference, and signal overlap.
+- **Sensor Placement Optimization**: Simulate and adjust sensor placement to improve coverage and reduce cost.
+- **Context-Aware Planning**: Enable intelligent responses to environmental conditions through rules and triggers.
+
+### 🛠 Tech Stack
+
+- Frontend: **React** + **TailwindCSS**
+- Backend: **Python (Flask)** + **PostgreSQL** (SQLite for development) + **SQLAlchemy**
+- Hosting: **Digital Ocean VPS** + **Cloudflare CDN**
+- Features:
+  - User session and save files
+  - Drag-and-drop 2D layout builder
+  - Customizable sensor and device types
+  - Real-time visual feedback and event logging
+  - Context rule engine
+  - Data persistence and REST API
+
+### 📽 Initial Proof of Concept
+
+[▶️ Watch Video Demo](https://drive.google.com/file/d/1rQm7J4klFf4MjSkYem8VUbxm7yhiFk_K/view?usp=sharing)
+
+---
+
+### 👨‍💻 Team (Group 6 – ENGR5720)
+
+- David Abiola — 100974509
+- Suhas Sunder — 100548159
+- Chao Meng — 100997810
