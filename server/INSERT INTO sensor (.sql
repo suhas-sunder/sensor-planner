@@ -1,0 +1,33 @@
+INSERT INTO sensor (
+    id,
+    type,
+    x,
+    y,
+    prev_x,
+    prev_y,
+    date_created,
+    date_modified,
+    room_coverage_area,
+    overlapping_sensors,
+    connected_devices,
+    sensor_rad,
+    mounted_to,
+    active,
+    floor_id
+) VALUES (
+    'sensor-01',
+    'motion',
+    100,
+    300,
+    0,
+    0,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP,
+    10,
+    '[{"sensor-id": "sensor-02", "overlap-area": 10}, {"sensor-id": "sensor-04", "overlap-area": 10}]',
+    '[{"id": "device-123"}]',
+    10,
+    'kitchen',
+    FALSE,
+    'floor-1-asdf'
+);

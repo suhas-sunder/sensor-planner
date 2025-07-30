@@ -408,7 +408,7 @@ const CanvasArea: React.FC<CanvasAreaProps> = ({
   }, [currentFloor]);
 
   return (
-    <div className="flex relative flex-col items-center justify-center w-full h-screen bg-white overflow-hidden cursor-pointer">
+    <div className="flex relative flex-col items-center justify-center w-full min-h-screen bg-white overflow-hidden cursor-pointer">
       <Scale />
       <DispCursorPos cursorPosition={cursorPosition} />
 

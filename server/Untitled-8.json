@@ -1,0 +1,1 @@
+[{"stmt":"SELECT id, device_type, x, y, prev_x, prev_y, date_created, date_modified, coverage_rad, active, mounted_to, floor_id, state\nFROM device;","header":[],"rows":[]}]

@@ -5,10 +5,44 @@ import SidebarMenu from "../components/navigation/SidebarMenu.js";
 import type { Device, Sensor } from "../components/utils/other/Types.js";
 import useSensorDeviceContext from "../components/hooks/useSensorDeviceContext.js";
 import DispEventLogs from "../components/layout/DispEventLogs.js";
+import { FetchAllLayoutData } from "../services/api/FetchAllLayoutData.js";
 
 export default function Dashboard() {
   const { floorId } = useParams();
   const currentFloor = Number(floorId) || 1;
+
+  useEffect(() => {
+    const loadEverything = async () => {
+      try {
+        const data = await FetchAllLayoutData(currentFloor.toString());
+
+        console.log(`--- Layout Data for Floor ${currentFloor} ---`);
+        console.log(
+          "TESTING FETCH REQUEST FROM BACKEND API FOR LAYOUT DATA IN DEVELOPMENT MODE!"
+        );
+
+        console.group("Sensors");
+        console.table(data.sensors);
+        console.groupEnd();
+
+        console.group("Devices");
+        console.table(data.devices);
+        console.groupEnd();
+
+        console.group("People");
+        console.table(data.people);
+        console.groupEnd();
+
+        console.group("Events");
+        console.table(data.events);
+        console.groupEnd();
+      } catch (error) {
+        console.error("Error fetching layout data:", error);
+      }
+    };
+
+    loadEverything();
+  }, [currentFloor]);
 
   const { sensors, devices, selectedNodeId, setSelectedNodeId } =
     useSensorDeviceContext();
