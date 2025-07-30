@@ -4,6 +4,9 @@
 from datetime import datetime
 import uuid
 from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+
 
 
 from models import (
@@ -22,7 +25,7 @@ from models import (
 
 
 app = Flask(__name__)
-
+CORS(app, resources={r"/*": {"origins": "*"}})  # dev only
 
  
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///smart.db"
@@ -536,7 +539,7 @@ def log_event():
 
 
 if __name__ == "__main__":
-  
-   with app.app_context():
-       create_tables()
-   app.run(debug=True)
+    with app.app_context():
+        create_tables()
+    app.run(debug=True, host="0.0.0.0", port=5000)
+
