@@ -21,10 +21,12 @@
 - Hosting: **Digital Ocean VPS** + **Cloudflare CDN**
 - Features:
   - User session and save files
-  - Drag-and-drop 2D layout builder
-  - Customizable sensor and device types
+  - Add/Remove/Drag-and-drop Sensors and Devices
+  - Connectivity and Interference Simulation
+  - Sensor Placement, Coverage, and Optimization
+  - Context-Aware Simulation and Planning
+  - Customizable Settings
   - Real-time visual feedback and event logging
-  - Context rule engine
   - Data persistence and REST API
 
 ### 📽 Initial Proof of Concept
