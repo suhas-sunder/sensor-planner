@@ -1,0 +1,21 @@
+.DS_Store
+
+# Dependencies and generated output
+node_modules/
+dist/
+build/
+.netlify/
+
+# Python local environments and runtime data
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+instance/*.db
+*.sqlite
+*.sqlite3
+
+# Local environment files
+.env
+.env.*
+!.env.example

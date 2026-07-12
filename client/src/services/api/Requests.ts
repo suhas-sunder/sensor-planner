@@ -1,6 +1,11 @@
 import axios from "axios";
 
-axios.defaults.baseURL = "http://192.168.2.11:5000"; // Default base route for local development
+const defaultApiBaseUrl = import.meta.env.PROD
+  ? "/api"
+  : "http://localhost:5000";
+
+axios.defaults.baseURL =
+  import.meta.env.VITE_API_BASE_URL || defaultApiBaseUrl;
 
 export const fetchLayouts = async () => {
   const response = await axios.get("/layouts");
