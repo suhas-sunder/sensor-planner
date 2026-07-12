@@ -6,7 +6,7 @@
 
 ### 🌐 Hosted Live On:
 
-[www.sensorplanner.com]([https://www.sensorplanner.com](https://sensor-planner.netlify.app/))
+[https://sensor-planner.netlify.app/](https://sensor-planner.netlify.app/)
 
 ---
 
